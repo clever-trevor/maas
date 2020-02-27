@@ -72,9 +72,9 @@ def create_symlinks():
 es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
 print(es)
 
-#delete_indices()
-#create_indices()
-load_fragments()
+delete_indices()
+create_indices()
+#load_fragments()
 #create_symlinks()
 
 

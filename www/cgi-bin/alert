@@ -111,7 +111,6 @@ if mode == "edit":
     """)
     # Build list of hosts based on hosts that are currently configured
     x = elasticsearch.run_search_uri(es,host_config_index,"q=*&size=10000")['hits']
-    total = x['total']['value']
     records = x['hits']
     hosts = ""
     for record in records:
@@ -208,7 +207,6 @@ elif mode == "view":
   print("<h2>Alert Config View</h2>")
   # Alert configuration
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
-  total = x['total']['value']
   alerts = x['hits']
 
   print("<TABLE class='container'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Edit</TR>")
@@ -234,7 +232,7 @@ elif mode == "test":
   print("<h2>Running Alert Checks</h2>")
   test = subprocess.run(["/app/maas/scripts/alert.py"])
   print("Test run<BR>")
-  print("<h3><A HREF='" + maas['kibana']['url']/'>View History</A></h3>")
+  print("<h3><A HREF='" + maas['kibana']['url'] + "/'>View History</A></h3>")
 
 print("</html>")
 

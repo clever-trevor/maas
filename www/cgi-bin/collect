@@ -15,7 +15,7 @@ print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.cs
 print("<h1><A style='text-decoration:none' HREF='/index.html'>Host Monitoring Configuration Management</a></h1>")
 print("<hr>")
 
-es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pwd":maas['elastic']['pass'] }
+es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pass":maas['elastic']['pass'] }
 
 host_config_index_in = "maas_config_hosts_require"
 host_config_index_out = "maas_config_hosts_publish"
