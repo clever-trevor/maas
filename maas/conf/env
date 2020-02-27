@@ -15,3 +15,7 @@ url=http://192.168.1.113:8888
 url=http://192.168.1.113:3000
 [prometheus]
 url=http://192.168.1.113:9090
+[views]
+alert_history=
+alert_current=
+alert_config=

@@ -231,7 +231,7 @@ elif mode == "view":
 elif mode == "test":
   print("<h2>Running Alert Checks</h2>")
   test = subprocess.run(["/app/maas/scripts/alert.py"])
-  print("Test run<BR>")
+  print("<h4>Test run completed</h4>")
   print("<h3><A HREF='" + maas['kibana']['url'] + "/'>View History</A></h3>")
 
 print("</html>")
