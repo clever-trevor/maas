@@ -1,0 +1,3 @@
+[[inputs.disk]]
+  mount_points = ["%FILESYSTEM%"]
+

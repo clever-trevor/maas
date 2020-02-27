@@ -1,0 +1,17 @@
+[kibana]
+url=http://192.168.1.113:5601
+[influxdb]
+url=http://192.168.1.113:8086
+binary=/app/influx/influxdb-1.7.10-1/usr/bin/influx
+[elastic]
+url=http://192.168.1.113:9200
+user=none
+pass=none
+[maas]
+url=http://192.168.1.113
+[chronograf]
+url=http://192.168.1.113:8888
+[grafana]
+url=http://192.168.1.113:3000
+[prometheus]
+url=http://192.168.1.113:9090

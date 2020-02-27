@@ -1,0 +1,37 @@
+#!/usr/bin/python3
+
+import cgi
+import os
+import configparser
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+print("Content-Type:text/html\n")
+print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<h1>Monitoring Admin Tasks</h1>")
+print("<hr>")
+
+fs = cgi.FieldStorage()
+if 'cmd' in fs :
+  cmd = fs['cmd'].value
+  command = ""
+  if cmd == "delete-metrics" :
+    if 'host' in fs:
+      command = maas['influxdb']['binary'] + ' -database "telegraf" -execute "DROP SERIES WHERE host=\'%s\'"' % ( fs['host'].value)
+    else :
+      quit()
+
+  try :
+    result = os.popen(command)
+    output = result.read().replace("\n","<BR>")
+    print("Executed " + command + "<BR>")
+    print("Results<BR><font face=courier>" + output)
+  except:
+    print("Error running " + command)
+else : 
+  f = open("/app/maas/html/admin","r")
+  print(f.read())
+
+
+

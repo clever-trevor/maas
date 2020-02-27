@@ -1,0 +1,41 @@
+# Telegraf Configuration
+#
+
+[global_tags] 
+  platform = "windows"
+
+# Configuration for telegraf agent
+[agent]
+  interval = "30s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = ""
+
+  logtarget = "file"
+  logfile = "./telegraf.log"
+  logfile_rotation_max_size = "10MB"
+  logfile_rotation_max_archives = 2
+
+  hostname = "%HOST%"
+
+  omit_hostname = false
+
+# Configuration for sending metrics to InfluxDB
+[[outputs.influxdb]]
+  urls = ["%INFLUXDB%"]
+
+# Read metrics about cpu usage
+[[inputs.cpu]]
+[[inputs.mem]]
+[[inputs.system]]
+
+[[inputs.win_perf_counters]]
+  [[inputs.win_perf_counters.object]]
+    ObjectName = "System"
+    Instances = ["------"]
+    Counters = ["Processes"]
+

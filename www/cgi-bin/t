@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+
+import cgi
+import os
+import configparser
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+print("Content-Type:text/html\n")
+
+
+print(maas['kibana']['url'])

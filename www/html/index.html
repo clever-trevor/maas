@@ -1,0 +1,29 @@
+<HTML>
+<html><head><link rel="stylesheet" type="text/css" href="/responstable.css"></head>
+
+<h1>Ent Mgt Metrics as a Service Portal</h1>
+<hr>
+<TABLE align=center style="vertical-align:top;" border =0 width=80%>
+<TR style="vertical-align:top;">
+  <TD>
+    <h2>Visualisation</h2>
+    <h4><A HREF="http://192.168.1.113:8888">Chronograf</A></h4>
+    <h4><A HREF="http://192.168.1.113:3000">Grafana</A></h4>
+    <h4><A HREF="http://192.168.1.113:9090">Prometheus</A></h4>
+  </TD>
+  <TD>
+    <h2>Config Mgmt</h2>
+    <h4><A HREF="/cgi-bin/collect?mode=view">Config View</A></h4>
+    <h4><A HREF="/cgi-bin/collect?mode=edit">Config Edit</A></h4>
+  </TD>
+</TR>
+<TR style="vertical-align:top;">
+  <TD COLSPAN=2>
+    <h2>Alert Mgmt</h2>
+    <h4><a href="/cgi-bin/alert?mode=view">View Alert Config </a></h4>
+    <h4><a href="/cgi-bin/alert?mode=edit">Edit Alert Config</a></h4>
+    <h4><a href="http://192.168.1.113:5601">View Alert History</a></h4>
+    <h4><a href="/cgi-bin/alert?mode=test">Run Test</a></h4>
+  </TD>
+</TR>
+</HTML>

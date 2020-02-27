@@ -1,0 +1,128 @@
+#!/usr/bin/python3
+
+import cgi
+import glob
+import urllib.request
+import elasticsearch
+import datetime
+import configparser
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+print("Content-Type:text/html;\n")
+print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<h1><A style='text-decoration:none' HREF='/index.html'>Host Monitoring Configuration Management</a></h1>")
+print("<hr>")
+
+es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pwd":maas['elastic']['pass'] }
+
+host_config_index_in = "maas_config_hosts_require"
+host_config_index_out = "maas_config_hosts_publish"
+
+fs = cgi.FieldStorage()
+try:
+  mode = fs['mode'].value
+except:
+  mode = "view"
+
+########### EDIT
+if mode == "edit":
+  # If we have a hostname and config, then write the config out
+  if 'content' in fs and 'host' in fs :
+    host = fs['host'].value
+    content = fs['content'].value
+    host = fs['host'].value
+    platform = elasticsearch.get_document_by_id(es,host_config_index_out,"_doc",host)['_source']['platform']
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    doc = {"host":host,"config":content,"platform":platform,"last_updated":now}
+    x = elasticsearch.post_document(es,host_config_index_in,"_doc",host,doc) 
+
+    urllib.request.urlopen(maas['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + host + "&reset=true")
+    print("<h2>Config written, view <A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>here</A></h2>")
+    print("<h5>Agent needes to be retarted to pick up new config</h5>")
+    print("<h3>Click <A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>here</A> to see Telgraf config</h3>")
+  # Only a host passed, so try and read existing config and then show form
+  elif 'host' in fs :
+    host = fs['host'].value
+    doc = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)
+    try :
+      content = doc['_source']['config']
+    except :
+      content = ""
+
+    print("""
+<html>
+Configure metric collection for a host
+<FORM ACTION="/cgi-bin/collect?mode=edit" METHOD="POST">
+<TABLE>
+ <TR>
+  <TD>Hostname</TD>
+  <TD>
+    <input name="host" id="host" value=""" + host + """></input>
+ </TR>
+ <TR>
+  <TD>Content</TD>
+  <TD>
+    <textarea rows=10 cols=40 id="content" name="content">""" + content + """</textarea>
+  </TD>
+ </TR>
+ <TR>
+  <TD COLSPAN=2 ALIGN=CENTER>
+   <input type="submit"></input>
+  </TD>
+ </TR>
+  
+
+</TABLE>
+
+</FORM>
+""")
+  # No fields passed so show inventory of existing hosts
+  else :
+    print("<h2>Monitored Host Inventory</h2>")
+    print("<TABLE class=container><TR><TH>Host<TH>Action</TR>")
+    try : 
+      x = elasticsearch.run_search_uri(es,host_config_index_out,"q=*&size=10000")['hits']
+      records = x['hits']
+    except :
+      records = {}
+    for r in records:
+      host = r['_source']['host'] 
+      print("<TR><TD>" + host + "<TD><A HREF='/cgi-bin/collect?host=" + host + "&mode=edit'>Edit Config</A></TR>")
+    print("</TABLE>")
+
+   
+#################### VIEW
+elif mode == "view":
+  if "host" in fs: 
+    host = fs['host'].value
+
+    try:
+      conf = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config'].split()
+
+      print("<h2>Showing collection config for host " + host + "</h2>")
+      print("<TABLE class='container'><TR><TH>Monitor Type</TH><TH>Instance</TH></TR>")
+      for line in conf:
+        x = line.split("=")
+        print("<TR><TD>" + x[0] + "</TD><TD>" + x[1] + "</TD></TR>")
+      print("</TABLE>")
+      print("<h3><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Edit Config</A></h3>")
+    except:
+      print("<h3>No Custom Configuration found for host %s</h3>" %  (host))
+      print("<h4><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Add New Configuration here </A></h4>")
+
+  else :
+    try : 
+      x = elasticsearch.run_search_uri(es,host_config_index_in,"q=*&size=10000")['hits']
+      records = x['hits']
+    except :
+      records = {}
+    print("<TABLE class='container'><TR><TH ALIGN=CENTER>Configured Hosts</TH></TR>")
+    for r in records:
+      host = r['_source']['host']
+      print("<TR><TD ALIGN=CENTER><A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>" + host + "</A></TD></TR>")
+    print("</TABLE>")
+    print("<h5>Append &host=xxx to the URL to jump directly to a host config</h5>")
+    print("<h3><A HREF='/cgi-bin/collect?mode=edit'>Add Configurarion for New Host</A></h3>")
+      

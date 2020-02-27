@@ -1,0 +1,4 @@
+[[inputs.procstat]]
+  exe = "%PROCESS%"
+  pid_finder = "native"
+
