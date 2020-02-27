@@ -39,7 +39,7 @@ def parse_alert_conf(conf_file):
       time_stamp = status.split()[2].split(":",1)[1]
       query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' AND %s = \'%s\'" % ( metric,metric_type,time_stamp,time_stamp,host,instance_name,instance_value )
       query = urllib.parse.quote(query)
-      url = "http://192.168.1.113:8888/sources/1/chronograf/data-explorer?query=" + query
+      url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
       doc['url'] = url
       escalate_alert(doc,url)
 
@@ -84,6 +84,7 @@ def logMsg(index,doc) :
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
   doc['timestamp'] = now
   elasticsearch.post_document(es,index,"_doc","",doc)
+  print("HI")
 
 def main():
   conf_file = "/app/influx/conf/alert.conf"
@@ -99,9 +100,8 @@ es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": ma
 # Delete old records from the "current" log
 doc = { "query":{"match_all": {} } }
 x = elasticsearch.es_function(es,log_current,"_delete_by_query?conflicts=proceed",doc,"POST")
-#x = elasticsearch.es_function(es,alert_history,"_delete_by_query?conflicts=proceed",doc,"POST")
 
-influx_url = "http://127.0.0.1:8086/query"
+influx_url = maas['influxdb']['url'] + "/query"
 start = time.process_time()
 
 tests = str(main())
