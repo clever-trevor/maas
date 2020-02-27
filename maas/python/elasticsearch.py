@@ -1,37 +1,43 @@
 from urllib.request import Request,urlopen
 import json
+import base64
+
+def add_creds(es):
+  creds = es['user'] + ":" + es['pass']
+  b64 = str(base64.b64encode(creds.encode("utf-8")),"utf-8")
+  return b64
 
 def show_indices(es):
   try :
     url = es['url'] + "/_cat/indices"
-    user = es['user']
-    pwd = es['pass']
-    req = urlopen(Request(url))
+    req = Request(url)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = urlopen(req)
   except :
-    req = ""
-  return req
+    resp = ""
+  return resp
 
 def create_index(es,index,settings) :
   try :
     url = es['url'] + "/" + index
-    user = es['user']
-    pwd = es['pass']
     headers = { "Content-Type":"application/json" }
     settings = json.dumps(settings).encode("utf-8")
-    req = json.load(urlopen(Request(url,data=settings,method="PUT",headers=headers)))
+    req = Request(url,data=settings,method="PUT",headers=headers)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
 
 def delete_index(es,index) :
   try :
     url = es['url'] + "/" + index
-    user = es['user']
-    pwd = es['pass']
-    req = json.load(urlopen(Request(url,method='DELETE')))
+    req = Request(url,method='DELETE')
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
   
 def post_document(es,index,type,id,doc) :
   try:
@@ -40,37 +46,45 @@ def post_document(es,index,type,id,doc) :
       url += "/" + id
     doc = str(json.dumps(doc)).encode("utf-8")
     headers = { "Content-Type":"application/json" }
-    req = json.load(urlopen(Request(url,data=doc,headers=headers)))
+    req = Request(url,data=doc,headers=headers)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
 
 def get_document_by_id(es,index,type,id) :
   try :
     url = es['url'] + "/" + index + "/" + type + "/" + id 
     headers = { "Content-Type":"application/json" }
-    req = json.load(urlopen(Request(url,headers=headers)))
+    req = Request(url,headers=headers)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(res))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
 
 def run_search_uri(es,index,query) :
   try :
     url = es['url'] + "/" + index + "/_search?" + query
     headers = { "Content-Type":"application/json" }
-    req = json.load(urlopen(Request(url,headers=headers)))
+    req = Request(url,headers=headers)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
 
 def run_search(es,index,query) :
   try :
     url = es['url'] + "/" + index + "/" + type + "/" + id 
     headers = { "Content-Type":"application/json" }
-    req = json.load(urlopen(Request(url,headers=headers)))
+    req = Request(url,headers=headers)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {} 
-  return req
+    resp = {} 
+  return resp
 
 def es_function(es,index,params,doc,method) :
   try :
@@ -79,7 +93,9 @@ def es_function(es,index,params,doc,method) :
       url += "/" + params
     headers = { "Content-Type":"application/json" }
     doc = str(json.dumps(doc)).encode("utf-8")
-    req = json.load(urlopen(Request(url,headers=headers,method=method,data=doc)))
+    req = Request(url,headers=headers,method=method,data=doc)
+    req.add_header("Authorization","Basic %s" % add_creds(es))
+    resp = json.load(urlopen(req))
   except :
-    req = {}
-  return req
+    resp = {}
+  return resp
