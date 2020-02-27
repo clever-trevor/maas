@@ -7,6 +7,7 @@ import datetime
 import json
 import elasticsearch
 import configparser
+import time
 
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
@@ -27,9 +28,9 @@ def create_indices ():
 
   settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"last_updated":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"}}}}
   # Fully populated config per host
-  x = elasticsearch.create_index(es,"maas_config_host_publish",settings)
+  x = elasticsearch.create_index(es,"maas_config_hosts_publish",settings)
   # Custom monitoring requirements
-  x = elasticsearch.create_index(es,"maas_config_host_require",settings)
+  x = elasticsearch.create_index(es,"maas_config_hosts_require",settings)
   # Alert settings
   x = elasticsearch.create_index(es,"maas_config_alert",settings)
 
@@ -70,11 +71,11 @@ def create_symlinks():
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
  
 es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
-print(es)
 
 delete_indices()
+time.sleep(2)
 create_indices()
-#load_fragments()
-#create_symlinks()
+load_fragments()
+create_symlinks()
 
 

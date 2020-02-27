@@ -6,19 +6,26 @@ import json
 import time
 import datetime
 import elasticsearch
+import configparser
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
 
 def parse_alert_conf(conf_file):
-  config=open(conf_file,"r")
+  x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
+  records = x['hits']
   tests = 0
-  # Read through each line
-  for line in config.readlines():
-    # Ignore comment lines
-    if line[0] == "#":
-      continue
-    line = line.rstrip()
-    host,metric_type,instance_name,instance_value,metric,operator,threshold,group = line.split(",")
+  for r in records:
+    host = r['host']
+    metric_type = r['type']
+    instance_name = r['instance_name']
+    instance_value = r['instance_value']
+    metric = r['metric']
+    operator = r['operator']
+    threshold = r['threshold']
+    queue = r['queue']
 
-    doc = {"host":host,"metric_type":metric_type,"instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":group}
+    doc = {"host":host,"metric_type":metric_type,"instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":queue}
     if metric_type == "disk" and instance_name == "path" and ":" in instance_value :
       instance_value = '\\\\' + instance_value
 
@@ -75,8 +82,6 @@ def test_metric(host,metric_type,instance_name,instance_value,metric,operator,th
 
 def logMsg(index,doc) :
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  print(now)
-  print(doc)
   doc['timestamp'] = now
   elasticsearch.post_document(es,index,"_doc","",doc)
 
@@ -87,8 +92,10 @@ def main():
 
 log_current = "maas_alert_log_current"
 alert_history = "maas_alert_log_history"
+alert_config_index = "maas_config_alert"
 # Set Elasticsearch object
-es = { "url":"http://192.168.1.113:9200","user":"none","pwd":"none" }
+es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
+
 # Delete old records from the "current" log
 doc = { "query":{"match_all": {} } }
 x = elasticsearch.es_function(es,log_current,"_delete_by_query?conflicts=proceed",doc,"POST")

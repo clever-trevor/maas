@@ -40,13 +40,6 @@ if 'host' in fs:
 
   if content == "" or 'reset' in fs :
 
-    if 'reset' in fs:
-      message += " RESET"
-      try:
-        os.remove(target)
-      except:
-        pass
-
     if 'os' in fs:
       platform = fs['os'].value
 
