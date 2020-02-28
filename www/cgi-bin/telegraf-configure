@@ -47,7 +47,6 @@ if 'host' in fs:
       template = "telegraf." + platform + ".template"
     else :
       template = "telegraf.template"
-
     host_frag = elasticsearch.get_document_by_id(es,fragment_index,"_doc",template)['_source']['fragment']
     content = host_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",host)
     content = content.replace("%INFLUXDB%",maas['influxdb']['url'])

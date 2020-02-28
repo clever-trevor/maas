@@ -45,8 +45,8 @@ if mode == "edit":
   # Only a host passed, so try and read existing config and then show form
   elif 'host' in fs :
     host = fs['host'].value
-    doc = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)
     try :
+      doc = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)
       content = doc['_source']['config']
     except :
       content = ""

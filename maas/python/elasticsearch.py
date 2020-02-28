@@ -59,7 +59,7 @@ def get_document_by_id(es,index,type,id) :
     headers = { "Content-Type":"application/json" }
     req = Request(url,headers=headers)
     req.add_header("Authorization","Basic %s" % add_creds(es))
-    resp = json.load(urlopen(res))
+    resp = json.load(urlopen(req))
   except :
     resp = {}
   return resp
