@@ -12,7 +12,7 @@ maas.read('/app/maas/conf/env')
 
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
-print("<h1><A style='text-decoration:none' HREF='/index.html'>Host Monitoring Configuration Management</a></h1>")
+print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Host Monitoring Configuration Management</a></h1>")
 print("<hr>")
 
 es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pass":maas['elastic']['pass'] }

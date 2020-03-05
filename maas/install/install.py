@@ -69,12 +69,14 @@ def load_fragments():
 def create_symlinks():
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
+  os.popen("ln -s /app/maas/python/influx.py /app/www/cgi-bin/influx.py")
+  os.popen("ln -s /app/maas/python/influx.py /app/maas/scripts/influx.py")
  
 es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
 
-delete_indices()
-time.sleep(2)
-create_indices()
+#delete_indices()
+#time.sleep(2)
+#create_indices()
 load_fragments()
 create_symlinks()
 

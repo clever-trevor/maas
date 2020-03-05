@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+# This routing controls viewing and setting of alerting
+import cgi
+import elasticsearch
+import influx
+import datetime
+import configparser
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+influx_url = maas['influxdb']['url'] + "/query"
+
+fs = cgi.FieldStorage()
+mode = "view"
+if 'mode' in fs :
+  mode = fs['mode'].value
+
+print("Content-Type:text/html;\n")
+print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Monitoring Alert Management</a></h1>")
+print("<hr>")
+
+group_in = ""
+if 'group' in fs :
+  group_in = fs['group'].value
+
+f = open("/app/maas/conf/groups.conf","r")
+groups = []  # Used to read in all the tests and groups
+
+if mode == "test" :
+  if 'host' in fs :
+    host = fs['host'].value
+  else :
+    print("<H3>You need to pass in a parameter called <b>host</b></H3>")
+    exit()
+
+  print("<H3>Running tests in group <i>%s</i> for <i>%s</i><h3>" % (group_in,host))
+  f = open("/app/maas/conf/groups.conf","r")
+  groups = []  # Used to read in all the tests and groups
+  status = {}  # Dictionary used to store the status of each group
+  summary = "<TABLE class=container><TR><TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
+  for line in f.readlines() :
+    params = line.rstrip().split(":")
+    group,metric_type,inst_name,inst_value,metric,operator,threshold = params
+    if group_in != "" and group != group_in:
+      continue
+    groups.append(params)
+    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % ( metric, metric_type, host, inst_name, inst_value )
+
+    value, time_stamp = influx.get_metric(influx_url,query)
+    result = influx.test_metric(value,operator,threshold)
+    time_stamp = time_stamp.replace("T"," ").replace("Z"," ")
+
+    # Create initial dictionary entry if it doesn't exist
+    if group not in status :
+      status[group] = {}
+      status[group]['outcome'] = "PASS"
+      status[group]['tests'] = 0
+      status[group]['failed'] = 0
+      status[group]['passed'] = 0
+
+    status[group]['tests'] += 1
+
+    # Result of "true" means the condition was true.  i.e. failed
+    if result is True :
+      status[group]['outcome'] = "FAIL"
+      status[group]['failed'] += 1
+    else :
+      status[group]['passed'] += 1
+
+    summary += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (metric_type,inst_name,inst_value,metric,operator,threshold,str(value),str(result),time_stamp)
+
+
+  summary += "</TABLE>"
+
+  if group not in status :
+    print("<h4>No tests found for this group</h4>")
+  else :
+
+    print("<TABLE class=container><TR><TH>Group Name<TH>Total Tests<TH>Failed<TH>Passed<TH>Outcome</TR>")
+    for group in status:
+      outcome = status[group]['outcome']
+      tests = status[group]['tests']
+      failed = status[group]['failed']
+      passed = status[group]['passed']
+      print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (group,tests,failed,passed,outcome))
+  
+    print("</TABLE>")
+    print("<h3>Breakdown</h3>" + summary)
+
+
+else :
+  print("<TABLE class=container><TR><TH>Group Name<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
+  for line in f.readlines() :
+    params = line.rstrip().split(":")
+    group,metric_type,inst_name,inst_value,metric,operator,threshold = params
+    if group_in != "" and group != group_in:
+      continue
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (group,metric_type,inst_name,inst_value,metric,operator,threshold))
+

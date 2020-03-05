@@ -7,6 +7,7 @@ import time
 import datetime
 import elasticsearch
 import configparser
+import influx
 
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
@@ -16,6 +17,7 @@ def parse_alert_conf(conf_file):
   records = x['hits']
   tests = 0
   for r in records:
+    r = r['_source']
     host = r['host']
     metric_type = r['type']
     instance_name = r['instance_name']
@@ -52,39 +54,24 @@ def escalate_alert(doc,url):
   return
 
 def test_metric(host,metric_type,instance_name,instance_value,metric,operator,threshold) :
-  query={"q":"SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric,metric_type,host,instance_name,instance_value) }
-  data = urllib.parse.urlencode(query).encode('ascii')
 
-  req = Request (influx_url,data)
-  resp = json.load(urllib.request.urlopen(req))
+  query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric,metric_type,host,instance_name,instance_value) 
+  value, time_stamp = influx.get_metric(influx_url,query)
+  result = influx.test_metric(value,operator,threshold)
 
-  status = "PASS"
-  for r in resp['results']:
-    if 'series' in r :
-      for s in r['series']:
-        for v in s['values']:
-          time_stamp = v[0]
-          value = v[1]
-          if operator == ">" and value > float(threshold) :
-            status = "ALERT"
-          elif operator == ">=" and value >= float(threshold) :
-            status = "ALERT"
-          elif operator == "<" and value < float(threshold) :
-            status = "ALERT"
-          elif operator == "<=" and value <= float(threshold) :
-            status = "ALERT"
-          elif operator == "=" and value == float(threshold) :
-            status = "ALERT"
-          status += " Actual:%s TimeSample:%s" % (value, time_stamp)
-    else :
+  if time_stamp == "" : 
       status = "NO-DATA-RETURNED"
+  elif result == True :
+    status = "ALERT : Actual:%s TimeSample:%s" % (value, time_stamp)
+  else :
+    status = "PASS : Actual:%s TimeSample:%s" % (value, time_stamp)
+
   return status
 
 def logMsg(index,doc) :
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
   doc['timestamp'] = now
   elasticsearch.post_document(es,index,"_doc","",doc)
-  print("HI")
 
 def main():
   conf_file = "/app/influx/conf/alert.conf"

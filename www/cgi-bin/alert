@@ -15,7 +15,7 @@ maas.read('/app/maas/conf/env')
 
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
-print("<h1><A style='text-decoration:none' HREF='/index.html'>Monitoring Alert Management</a></h1>")
+print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Monitoring Alert Management</a></h1>")
 print("<hr>")
 
 es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
@@ -51,11 +51,12 @@ if mode == "edit":
     operator = fs['operator'].value
     threshold = fs['threshold'].value
     queue = fs['queue'].value
+    tag = fs['tag'].value
 
     key = "%s:%s:%s:%s:%s" % ( host,mon_type,instance_name,instance_value,metric )
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    doc = { "host":host, "type":mon_type, "instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":queue,"last_updated":now }
+    doc = { "host":host, "type":mon_type, "instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":queue,"tag":tag,"last_updated":now }
     # Open alert config
     print("<h4><font color='Red'>** Alert Written to Database **</font></h4>")
     x = elasticsearch.post_document(es,alert_config_index,"_doc",key,doc)
@@ -98,6 +99,10 @@ if mode == "edit":
       queue = fs['queue'].value
     else :
       queue = ""
+    if 'tag' in fs : 
+      tag = fs['tag'].value
+    else :
+      tag = ""
 
     # Now lets build the form, populating values if we have them
     print("""
@@ -184,6 +189,15 @@ if mode == "edit":
   </TD>
  </TR>
  <TR>
+  <TD>Tag (Optional)</TD>
+  <TD>
+  """)
+    print("<input name='tag' id='tag' value='" + tag + "'>")
+    print("""
+    </input>
+  </TD>
+ </TR>
+ <TR>
   <TD COLSPAN=2 ALIGN=CENTER>
    <input class="form-submit-button" type="submit"></input>
   </TD>
@@ -209,7 +223,7 @@ elif mode == "view":
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   alerts = x['hits']
 
-  print("<TABLE class='container'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Edit</TR>")
+  print("<TABLE class='container'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag<TH>Edit</TR>")
 
   for r in alerts:
     r = r['_source']
@@ -221,10 +235,14 @@ elif mode == "view":
     operator = r['operator']
     threshold = r['threshold']
     queue = r['queue']
+    try :
+      tag = r['tag']
+    except:
+      tag = ""
 
-    params = "mode=edit&host=%s&type=%s&instance_name=%s&instance_value=%s&metric=%s&operator=%s&threshold=%s&queue=%s&edit=true" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue)
+    params = "mode=edit&host=%s&type=%s&instance_name=%s&instance_value=%s&metric=%s&operator=%s&threshold=%s&queue=%s&tag=%s&edit=true" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag)
     url = "/cgi-bin/alert?" + params
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,url))
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag,url))
   print("</TABLE>")
   print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Edit Mode</A></h3>")
 
