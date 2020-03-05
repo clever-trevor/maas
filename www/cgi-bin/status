@@ -47,7 +47,10 @@ if mode == "test" :
     if group_in != "" and group != group_in:
       continue
     groups.append(params)
-    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % ( metric, metric_type, host, inst_name, inst_value )
+
+    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' " % ( metric, metric_type, host )
+    if inst_name != "" :
+      query += " AND %s='%s'" % ( inst_name, inst_value )
 
     value, time_stamp = influx.get_metric(influx_url,query)
     result = influx.test_metric(value,operator,threshold)

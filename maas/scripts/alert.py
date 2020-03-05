@@ -39,7 +39,9 @@ def parse_alert_conf(conf_file):
 
     if "ALERT" in status:
       time_stamp = status.split()[2].split(":",1)[1]
-      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' AND %s = \'%s\'" % ( metric,metric_type,time_stamp,time_stamp,host,instance_name,instance_value )
+      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric,metric_type,time_stamp,time_stamp,host )
+      if instance_name != "" : 
+        query += " AND %s = \'%s\'" % ( instance_name,instance_value )
       query = urllib.parse.quote(query)
       url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
       doc['url'] = url
