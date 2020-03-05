@@ -73,6 +73,11 @@ if mode == "test" :
     else :
       status[group]['passed'] += 1
 
+    if result == False:
+      result = "<FONT Color=Green>Good</font>"
+    else :
+      result = "<FONT Color=Red>Good</font>"
+
     summary += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (metric_type,inst_name,inst_value,metric,operator,threshold,str(value),str(result),time_stamp)
 
 
