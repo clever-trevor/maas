@@ -14,7 +14,7 @@ maas.read('/app/maas/conf/env')
 
 
 print("Content-Type:text/html;\n")
-print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Monitoring Alert Management</a></h1>")
 print("<hr>")
 
@@ -223,7 +223,7 @@ elif mode == "view":
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   alerts = x['hits']
 
-  print("<TABLE class='container'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag<TH>Edit</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag<TH>Edit</TR>")
 
   for r in alerts:
     r = r['_source']

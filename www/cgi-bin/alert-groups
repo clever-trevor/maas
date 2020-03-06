@@ -26,7 +26,7 @@ if 'mode' in fs :
   mode = fs['mode'].value
 
 print("Content-Type:text/html;\n")
-print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Group Alert Management</a></h1>")
 print("<hr>")
 
@@ -35,6 +35,13 @@ if 'tag' in fs :
   tag_in = fs['tag'].value
 else:
   print("<H3>You need to pass in a parameter called <b>tag</b></H3>")
+  print("<H4>Available tags below</H4>")
+  query = {"size":0,"aggs":{"uniq_tags":{"terms":{"field":"tag.keyword"}}}}
+  x = elasticsearch.run_search(es,alert_config_index,query)['aggregations']['uniq_tags']['buckets']
+  print("<TABLE class='blueTable'><TR><TH>Tag</TR>")
+  for tag in x :
+    print("<TR><TD>" + tag['key'] + "</TR>")
+  print("</TABLE>")
   exit()
 
 # Build Elastic query to return all records which match the supplied tag
@@ -42,7 +49,7 @@ query = "q=tag:" + tag_in
 x = elasticsearch.run_search_uri(es,alert_config_index, query + "&size=10000")['hits']
 # If no results returned, then drop out
 if x['total']['value'] == 0:
-  print("<h2>No tests found for this Tag</h2>")
+  print("<h2>No tests found for Tag <i>%s</i></h2>" % ( tag_in ))
   exit()
 
 # Bring the records into a list
@@ -54,7 +61,7 @@ if mode == "test" :
   print("<H2>Running tests in group <i>%s</i><h2>" % (tag_in))
 
   # Build a table of each test executed to show at the end
-  monitors = "<TABLE class=container><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
+  monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
 
   status = {}  # Dictionary used to store the overall monitors and status
   for r in records :
@@ -92,7 +99,7 @@ if mode == "test" :
     status[tag_in]['tests'] += 1
 
     # Result of "true" means the condition was true.  i.e. failed
-    if result is True :
+    if result is True or value == -1 :
       status[tag_in]['outcome'] = "FAIL"
       status[tag_in]['failed'] += 1
       result = "<FONT Color=Red>FAIL</font>"
@@ -106,7 +113,7 @@ if mode == "test" :
   monitors += "</TABLE>"
 
   # Print one line summary of all tests executed
-  print("<TABLE class=container><TR><TH>Tag<TH>Total Tests<TH>Failed<TH>Passed<TH>Outcome</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Tag<TH>Total Tests<TH>Failed<TH>Passed<TH>Outcome</TR>")
   for tag in status:
     outcome = status[tag]['outcome']
     if outcome == "FAIL" :
@@ -125,7 +132,8 @@ if mode == "test" :
 
 # View Mode
 else :
-  print("<TABLE class=container><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
+  print("<h2>Viewing matches for tag <i>%s</i></h2>" % ( tag_in ))
+  print("<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
 
   # Loop through each record that was found
   for r in records :

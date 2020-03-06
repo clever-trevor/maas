@@ -11,7 +11,7 @@ maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
 print("Content-Type:text/html;\n")
-print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Host Monitoring Configuration Management</a></h1>")
 print("<hr>")
 
@@ -81,7 +81,7 @@ Configure metric collection for a host
   # No fields passed so show inventory of existing hosts
   else :
     print("<h2>Monitored Host Inventory</h2>")
-    print("<TABLE class=container><TR><TH>Host<TH>Action</TR>")
+    print("<TABLE class='blueTable'><TR><TH>Host<TH>Action</TR>")
     try : 
       x = elasticsearch.run_search_uri(es,host_config_index_out,"q=*&size=10000")['hits']
       records = x['hits']
@@ -102,7 +102,7 @@ elif mode == "view":
       conf = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config'].split()
 
       print("<h2>Showing collection config for host " + host + "</h2>")
-      print("<TABLE class='container'><TR><TH>Monitor Type</TH><TH>Instance</TH></TR>")
+      print("<TABLE class='blueTable'><TR><TH>Monitor Type</TH><TH>Instance</TH></TR>")
       for line in conf:
         x = line.split("=")
         print("<TR><TD>" + x[0] + "</TD><TD>" + x[1] + "</TD></TR>")
@@ -118,7 +118,7 @@ elif mode == "view":
       records = x['hits']
     except :
       records = {}
-    print("<TABLE class='container'><TR><TH ALIGN=CENTER>Configured Hosts</TH></TR>")
+    print("<TABLE class='blueTable'><TR><TH ALIGN=CENTER>Configured Hosts</TH></TR>")
     for r in records:
       host = r['_source']['host']
       print("<TR><TD ALIGN=CENTER><A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>" + host + "</A></TD></TR>")

@@ -75,11 +75,12 @@ def run_search_uri(es,index,query) :
     resp = {}
   return resp
 
-def run_search(es,index,query) :
+def run_search(es,index,query):
   try :
-    url = es['url'] + "/" + index + "/" + type + "/" + id 
+    url = es['url'] + "/" + index  + "/_search"
+    query = str(json.dumps(query)).encode("utf-8")
     headers = { "Content-Type":"application/json" }
-    req = Request(url,headers=headers)
+    req = Request(url,method="GET",data=query,headers=headers)
     req.add_header("Authorization","Basic %s" % add_creds(es))
     resp = json.load(urlopen(req))
   except :
