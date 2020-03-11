@@ -12,7 +12,7 @@ import influx
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
-def parse_alert_conf(conf_file):
+def parse_alerts():
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   records = x['hits']
   tests = 0
@@ -76,8 +76,7 @@ def logMsg(index,doc) :
   elasticsearch.post_document(es,index,"_doc","",doc)
 
 def main():
-  conf_file = "/app/influx/conf/alert.conf"
-  tests = parse_alert_conf(conf_file)
+  tests = parse_alerts()
   return tests
 
 log_current = "maas_alert_log_current"
