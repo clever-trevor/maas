@@ -59,6 +59,7 @@ if mode == "edit":
     doc = { "host":host, "type":mon_type, "instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":queue,"tag":tag,"last_updated":now }
     # Open alert config
     print("<h4><font color='Red'>** Alert Written to Database **</font></h4>")
+    key = key.replace("/","%2F")
     x = elasticsearch.post_document(es,alert_config_index,"_doc",key,doc)
 
     # print link to config
@@ -244,7 +245,7 @@ elif mode == "view":
     url = "/cgi-bin/alert?" + params
     print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag,url))
   print("</TABLE>")
-  print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Edit Mode</A></h3>")
+  print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Add New Alert</A></h3>")
 
 elif mode == "test":
   print("<h2>Running Alert Checks</h2>")
