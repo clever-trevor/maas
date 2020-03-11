@@ -48,7 +48,7 @@ else:
 query = "q=tag:" + tag_in 
 x = elasticsearch.run_search_uri(es,alert_config_index, query + "&size=10000")['hits']
 # If no results returned, then drop out
-if x['total']['value'] == 0:
+if x['total'] == 0:
   print("<h2>No tests found for Tag <i>%s</i></h2>" % ( tag_in ))
   exit()
 
