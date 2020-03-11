@@ -224,7 +224,7 @@ elif mode == "view":
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   alerts = x['hits']
 
-  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag<TH>Edit</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag</TR>")
 
   for r in alerts:
     r = r['_source']
@@ -241,11 +241,31 @@ elif mode == "view":
     except:
       tag = ""
 
-    params = "mode=edit&host=%s&type=%s&instance_name=%s&instance_value=%s&metric=%s&operator=%s&threshold=%s&queue=%s&tag=%s&edit=true" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag)
-    url = "/cgi-bin/alert?" + params
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag,url))
+    params = "&host=%s&type=%s&instance_name=%s&instance_value=%s&metric=%s&operator=%s&threshold=%s&queue=%s&tag=%s&edit=true" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag)
+    url = "/cgi-bin/alert?" 
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag,url + "mode=edit" + params, url + "mode=delete" + params))
   print("</TABLE>")
   print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Add New Alert</A></h3>")
+
+elif mode == "delete" :
+  host = fs['host'].value
+  mon_type = fs['type'].value
+  instance_name = fs['instance_name'].value
+  instance_value = fs['instance_value'].value
+  metric = fs['metric'].value
+  operator = fs['operator'].value
+  threshold = fs['threshold'].value
+  queue = fs['queue'].value
+  tag = fs['tag'].value
+
+  key = "%s:%s:%s:%s:%s" % ( host,mon_type,instance_name,instance_value,metric )
+  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+  # Open alert config
+  print("<h4><font color='Red'>** Alert Deleted from Database **</font></h4>")
+  key = key.replace("/","%2F")
+  x = elasticsearch.delete_document_by_id(es,alert_config_index,"_doc",key)
+  print("<h3><A HREF='/cgi-bin/alert?mode=view'>View Alert Configuration</A></H3>")
 
 elif mode == "test":
   print("<h2>Running Alert Checks</h2>")
