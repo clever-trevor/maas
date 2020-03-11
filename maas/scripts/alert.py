@@ -32,13 +32,12 @@ def parse_alerts():
       instance_value = '\\\\' + instance_value
 
     # Now test this
-    status = test_metric(host,metric_type,instance_name,instance_value,metric,operator,threshold)
+    status,time_stamp = test_metric(host,metric_type,instance_name,instance_value,metric,operator,threshold)
     doc['status'] = status
 
     logMsg(log_current,doc)
 
     if "ALERT" in status:
-      time_stamp = status.split()[2].split(":",1)[1]
       query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric,metric_type,time_stamp,time_stamp,host )
       if instance_name != "" : 
         query += " AND %s = \'%s\'" % ( instance_name,instance_value )
@@ -68,7 +67,7 @@ def test_metric(host,metric_type,instance_name,instance_value,metric,operator,th
   else :
     status = "PASS : Actual:%s TimeSample:%s" % (value, time_stamp)
 
-  return status
+  return status,time_stamp
 
 def logMsg(index,doc) :
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
