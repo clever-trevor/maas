@@ -45,7 +45,7 @@ else:
   exit()
 
 # Build Elastic query to return all records which match the supplied tag
-query = "q=tag.keyword:'" + tag_in + "'"
+query = "q=tag.keyword:'*" + tag_in + "*'"
 x = elasticsearch.run_search_uri(es,alert_config_index, query + "&size=10000")['hits']
 # If no results returned, then drop out
 if x['total'] == 0:
