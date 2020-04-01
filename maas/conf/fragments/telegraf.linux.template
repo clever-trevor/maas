@@ -31,12 +31,37 @@
 
 # Read metrics about cpu usage
 [[inputs.cpu]]
+
 [[inputs.processes]]
+
 [[inputs.mem]]
+
 [[inputs.system]]
+
+[[inputs.net]]
+  ignore_protocol_stats = true
 
 [[inputs.statsd]]
   protocol = "udp"
   service_address = "127.0.0.1:9125"
   metric_separator = "_"
 
+[[inputs.disk]]
+  mount_points = ["/","/boot","/home","/opt","/tmp","/usr","/var","/var/crash"]
+
+[[inputs.procstat]]
+  exe = "sshd"
+
+[[inputs.procstat]]
+  exe = "ntpd"
+
+[[inputs.procstat]]
+  exe = "xinetd"
+
+[[inputs.procstat]]
+  exe = "crond"
+
+[[inputs.procstat]]
+  exe = "rsyslogd"
+
+## Custom configurations start here
