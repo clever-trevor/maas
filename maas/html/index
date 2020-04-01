@@ -6,26 +6,31 @@
 <TABLE align=center style="vertical-align:top;" border =0 width=80%>
 <TR style="vertical-align:top;">
   <TD>
+    <h2>Agent Configuration</h2>
+    <h4><A HREF="/cgi-bin/collect?mode=view">View config by node</A></h4>
+    <h4><A HREF="/cgi-bin/collect?mode=edit">Edit config by node</A></h4>
+  </TD>
+  <TD>
     <h2>Visualisation</h2>
+    <h4><a href="/cgi-bin/health?hosts=*">Agent Health</a></h4>
     <h4><A HREF="%CHRONOGRAF%">Chronograf</A></h4>
     <h4><A HREF="%GRAFANA%">Grafana</A></h4>
     <h4><A HREF="%PROMETHEUS%">Prometheus</A></h4>
-    <h4><a href="/cgi-bin/health?hosts=*">Agent Health</a></h4>
-  </TD>
-  <TD>
-    <h2>Config Mgmt</h2>
-    <h4><A HREF="/cgi-bin/collect?mode=view">Config View</A></h4>
-    <h4><A HREF="/cgi-bin/collect?mode=edit">Config Edit</A></h4>
   </TD>
 </TR>
 <TR style="vertical-align:top;">
-  <TD COLSPAN=2>
-    <h2>Alert Mgmt</h2>
-    <h4><a href="/cgi-bin/alert?mode=view">View Alert Config </a></h4>
-    <h4><a href="/cgi-bin/alert?mode=edit">Edit Alert Config</a></h4>
-    <h4><a href="/cgi-bin/alert-groups?tag=TEST">Alert Group Management</a></h4>
+  <TD>
+    <h2>Alerting</h2>
     <h4><a href="%KIBANA%">View Alert History</a></h4>
-    <h4><a href="/cgi-bin/alert?mode=test">Run Test</a></h4>
+    <h4><a href="/cgi-bin/alert?mode=view">View Alert Configuration</a></h4>
+    <h4><a href="/cgi-bin/alert?mode=edit">Edit Alert Configuration</a></h4>
+    <h4><a href="/cgi-bin/alert-groups?tag=TEST">Alert Grouping Management</a></h4>
+  </TD>
+  <TD>
+    <h2>Testing</h2>
+    <h4><a href="/cgi-bin/test-metric">Generate Test Metric</a></h4>
+    <h4><a href="/cgi-bin/alert?mode=test">Evaluate all thresholds</a></h4>
+    <h4><a href="/cgi-bin/admin">Admin (hidden)</a></h4>
   </TD>
 </TR>
 </HTML>

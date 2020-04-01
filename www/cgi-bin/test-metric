@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+
+import cgi
+import os
+import configparser
+import socket
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+print("Content-Type:text/html\n")
+print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
+print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Generate Test Metrics</a></h1>")
+print("<hr>")
+
+fs = cgi.FieldStorage()
+if 'metric_name' in fs and 'metric_value' in fs and 'app_id' in fs :
+  print("<h2>Metric generated</h2>")
+  app_id = fs['app_id'].value
+  host = fs['host'].value
+  metric_name = fs['metric_name'].value
+  metric_value = fs['metric_value'].value
+  string = "statsd,app_id=%s,host=%s,metric_name=%s:%s|c" % (app_id,host,metric_name,metric_value)
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9125))
+  print("<h4>Metric Generated!</h4>")
+else :
+  print("<h2>Enter your custom metric details below</h2>")
+  print("""
+<html>
+<FORM ACTION="/cgi-bin/test-metric?mode=generate" METHOD="POST">
+<TABLE>
+
+ <TR>
+  <TD>App Id (Numeric Only)</TD>
+  <TD>
+    <input name="app_id" id="app_id" pattern="[0-9]+"></input>
+  </TD>
+ </TR>
+
+ <TR>
+  <TD>Host Name (Lower Case)</TD>
+  <TD>
+    <input name="host" id="host" pattern="[a-z0-9\-]+"></input>
+  </TD>
+ </TR>
+
+ <TR>
+  <TD>Metric Name (a-z 0-9 _ -)</TD>
+  <TD>
+    <input name="metric_name" id="metric_name" pattern="[a-z0-9\_\-]+"></input>
+  </TD>
+ </TR>
+
+ <TR>
+  <TD>Metric Value (Numeric only)</TD>
+  <TD>
+    <input name="metric_value" id="metric_Value" pattern="[0-9\.]+"></input>
+  </TD>
+ </TR>
+
+ <TR>
+  <TD COLSPAN=2 ALIGN=CENTER>
+   <input type="submit"></input>
+  </TD>
+ </TR>
+
+</TABLE>
+
+</FORM>
+""")
+
