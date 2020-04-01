@@ -1,5 +1,5 @@
 <HTML>
-<html><head><link rel="stylesheet" type="text/css" href="/responstable.css"></head>
+<html><head><link rel="stylesheet" type="text/css" href="/dark.css"></head>
 
 <h1>Ent Mgt Metrics as a Service Portal</h1>
 <hr>
@@ -23,6 +23,7 @@
     <h4><a href="/cgi-bin/alert?mode=view">View Alert Config </a></h4>
     <h4><a href="/cgi-bin/alert?mode=edit">Edit Alert Config</a></h4>
     <h4><a href="/cgi-bin/alert-groups?tag=TEST">Alert Group Management</a></h4>
+    <h4><a href="/cgi-bin/health?hosts=*">Agent Health</a></h4>
     <h4><a href="%KIBANA%">View Alert History</a></h4>
     <h4><a href="/cgi-bin/alert?mode=test">Run Test</a></h4>
   </TD>

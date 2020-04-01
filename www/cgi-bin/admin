@@ -8,7 +8,7 @@ maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
 print("Content-Type:text/html\n")
-print("<html><head><link rel='stylesheet' type='text/css' href='/responstable.css'></head>")
+print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1>Monitoring Admin Tasks</h1>")
 print("<hr>")
 
