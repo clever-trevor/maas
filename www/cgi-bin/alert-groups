@@ -40,7 +40,11 @@ else:
   x = elasticsearch.run_search(es,alert_config_index,query)['aggregations']['uniq_tags']['buckets']
   print("<TABLE class='blueTable'><TR><TH>Tag</TR>")
   for tag in x :
-    print("<TR><TD>" + tag['key'] + "</TR>")
+    print("<TR><TD>")
+    mytags = tag['key'].split()
+    for mytag in mytags:
+      print("<A HREF='/cgi-bin/alert-groups?tag=%s'>%s</A>" % ( mytag,mytag))
+    print("</TD></TR>")
   print("</TABLE>")
   exit()
 
