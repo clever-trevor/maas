@@ -78,6 +78,6 @@ es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" 
 #time.sleep(2)
 #create_indices()
 load_fragments()
-create_symlinks()
+#create_symlinks()
 
 

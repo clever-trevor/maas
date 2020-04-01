@@ -35,3 +35,8 @@
 [[inputs.mem]]
 [[inputs.system]]
 
+[[inputs.statsd]]
+  protocol = "udp"
+  service_address = "127.0.0.1:9125"
+  metric_separator = "_"
+
