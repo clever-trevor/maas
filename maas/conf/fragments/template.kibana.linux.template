@@ -1,0 +1,5 @@
+# Kibana template for Linux
+[[inputs.procstat]]
+  pattern = "kibana"   # Pattern to search for 
+  process_name = "kibana"   # Name to report back
+

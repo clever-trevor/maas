@@ -46,26 +46,6 @@ def create_indices ():
   for a in x:
     print(a.decode("UTF-8").rstrip())
 
-
-def put_fragment(filename) :
-  conf = open(filename,"r")
-  config = ""
-  for line in conf :
-    line = line.rstrip().replace("\"","\\\"") + "\\n"
-    line = line.replace("\{","\\{").replace("\}","\\}")
-    line = line.replace("'","'\\''")
-    config += line
-  name = os.path.basename(filename).rstrip()
-  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  doc = { "fragment":config, "created":now }
-  result = elasticsearch.post_document(es,"maas_config_fragments","_doc",name,doc)
-  print(name + " : " + result['result'])
-
-def load_fragments():
-  templates = glob.glob("/app/maas/conf/fragments/*template")
-  for template in templates:
-    put_fragment(template)
-
 def create_symlinks():
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
@@ -74,10 +54,9 @@ def create_symlinks():
  
 es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
 
-#delete_indices()
-#time.sleep(2)
-#create_indices()
-load_fragments()
-#create_symlinks()
+delete_indices()
+time.sleep(2)
+create_indices()
+create_symlinks()
 
 

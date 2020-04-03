@@ -1,3 +1,4 @@
+# Custom process monitor for Windows
 [[inputs.procstat]]
   exe = "%PROCESS%"
   pid_finder = "native"

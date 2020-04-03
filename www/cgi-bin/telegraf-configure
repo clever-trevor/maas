@@ -1,5 +1,12 @@
 #!/usr/bin/python3
 
+# This web page is used to build a configuration for a Telegraf agent 
+# based on a URL call with some params
+# os=  The template to use.  "linux" or "windows" supported
+# host=  The hostname. This should be short name in lower case
+# reset=   Set to "true" to rebuild the configuration on startup
+# tags=  A series of tags to deploy templated monitoring packs for known componenents
+
 import cgi
 import datetime
 import os
@@ -40,19 +47,22 @@ if 'host' in fs:
 
   if content == "" or 'reset' in fs :
 
+    # If an OS param was supplied, then use that template
     if 'os' in fs:
       platform = fs['os'].value
 
     if platform != "":
       template = "telegraf." + platform + ".template"
+    # No OS param so use very basic config
     else :
       template = "telegraf.template"
+
+    # Get the base config for this host
+    # "content" will be built up based on information in incoming request
     host_frag = elasticsearch.get_document_by_id(es,fragment_index,"_doc",template)['_source']['fragment']
     content = host_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",host)
     content = content.replace("%INFLUXDB%",maas['influxdb']['url'])
 
-    filesystems = ""
-    
     try : 
       host_config_in = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config']
       collect = host_config_in.replace("\\n","\n").replace("\\\"","\"").split()
@@ -62,25 +72,35 @@ if 'host' in fs:
     try :
       for line in collect:
         monitor_type,instance = line.rstrip().split("=")
+        x = ""
+        # Process monitor. 
         if monitor_type == "process" :
           fragment = "procstat." + platform + ".template"
           x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%PROCESS%",instance)
-          content += x
+        # Filesystem monitor
         elif monitor_type == "filesystem":
           fragment = "disk." + platform + ".template"
           x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%FILESYSTEM%",instance)
-          content += x
+        # URL monitor
         elif monitor_type == "http":
           fragment = "http.template"
           x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%URL%",instance)
-          content += x
+        # Pre-populated template
+        elif monitor_type == "template":
+          fragment = "template." + instance + "." + platform + ".template"
+          x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
+          x = x.replace("\\n","\n").replace("\\\"","\"")
+
+        # Add the processed fragment
+        content += x
+
       collect.close()
     except:
       pass
-   
+    
     message += " New config generated"
   print(content)
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
