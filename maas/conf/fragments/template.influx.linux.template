@@ -1,0 +1,15 @@
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#          Influx Template for Linux         #
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+[[inputs.procstat]]
+  pattern = "influxd"
+  process_name = "influxd"
+
+[[inputs.procstat]]
+  pattern = "kronograf"
+  process_name = "kronograf"
+
+[[inputs.procstat]]
+  pattern = "kapacitor"
+  process_name = "kapacitor"
+

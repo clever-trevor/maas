@@ -1,4 +1,6 @@
-# Elasticsearch Template for Linux
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#       Elasticsearch Template for Linux     #
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 [[inputs.procstat]]
   pattern = "elasticsearch.*jdk"
   process_name = "elasticsearch"
