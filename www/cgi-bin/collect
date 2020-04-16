@@ -97,32 +97,50 @@ Configure metric collection for a host
 elif mode == "view":
   if "host" in fs: 
     host = fs['host'].value
-
     try:
       conf = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config'].split()
 
-      print("<h2>Showing collection config for host " + host + "</h2>")
+      print("<h2>Showing custom collection for host " + host + "</h2>")
       print("<TABLE class='blueTable'><TR><TH>Monitor Type</TH><TH>Instance</TH></TR>")
       for line in conf:
         x = line.split("=")
         print("<TR><TD>" + x[0] + "</TD><TD>" + x[1] + "</TD></TR>")
       print("</TABLE>")
-      print("<h3><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Edit Config</A></h3>")
+      print("<h3><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Edit Custom Config</A></h3>")
+      print("<h3><A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>View Full Config</A></h3>")
     except:
       print("<h3>No Custom Configuration found for host %s</h3>" %  (host))
       print("<h4><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Add New Configuration here </A></h4>")
 
   else :
+    # Here we're going to get all hosts which have a config and display
+    # in a table.  If there is a custom config, then we'll show that too
+    custom = {}
     try : 
+      x = elasticsearch.run_search_uri(es,host_config_index_out,"q=*&size=10000")['hits']
+      all_hosts = x['hits']
+      all_hosts = sorted(all_hosts,key=lambda i: i['_source']['host'])
       x = elasticsearch.run_search_uri(es,host_config_index_in,"q=*&size=10000")['hits']
-      records = x['hits']
+      custom_hosts = x['hits']
+      custom_hosts = sorted(custom_hosts,key=lambda i: i['_source']['host'])
+      for r in custom_hosts:
+        host = r['_source']['host']
+        custom[host] = True
     except :
-      records = {}
-    print("<TABLE class='blueTable'><TR><TH ALIGN=CENTER>Configured Hosts</TH></TR>")
-    for r in records:
+      all_hosts = {}
+    print("""
+    <TABLE class='blueTable'>
+    <TR><TH COLSPAN=2 ALIGN=CENTER>Configured Hosts</TH></TR>
+    <TR><TH>Full Config<TH>Custom Config</TR>
+""")
+    for r in all_hosts:
       host = r['_source']['host']
-      print("<TR><TD ALIGN=CENTER><A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>" + host + "</A></TD></TR>")
+      full_url = "<A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>" + host + "</A>"
+      custom_url = ""
+      if host in custom:
+          custom_url = "<A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>" + host + "</A>"
+      print("<TR><TD ALIGN=CENTER>" + full_url + "</TD><TD>" + custom_url + "</TD></TR>")
     print("</TABLE>")
     print("<h5>Append &host=xxx to the URL to jump directly to a host config</h5>")
-    print("<h3><A HREF='/cgi-bin/collect?mode=edit'>Add Configurarion for New Host</A></h3>")
+    print("<h3><A HREF='/cgi-bin/collect?mode=edit'>Add Configuration for New Host</A></h3>")
       
