@@ -60,11 +60,22 @@ Configure metric collection for a host
   <TD>Hostname</TD>
   <TD>
     <input name="host" id="host" value=""" + host + """></input>
+  </TD>
+  <TD>&nbsp;&nbsp;&nbsp;</TD>
+  <TD> </TD>
  </TR>
  <TR>
   <TD>Content</TD>
   <TD>
     <textarea rows=10 cols=40 id="content" name="content">""" + content + """</textarea>
+  </TD>
+  <TD></TD>
+  <TD align=center>
+<B>Supported Monitors</B><BR>
+process=<I>process_name</I><BR>
+filesystem=<I>mount_point</I><BR>
+http=<I>url</I><BR>
+template=<I>pre-configure-component-template</I><BR>
   </TD>
  </TR>
  <TR>
@@ -77,8 +88,10 @@ Configure metric collection for a host
 </TABLE>
 
 </FORM>
+<BR><BR>
+
 """)
-  # No fields passed so show inventory of existing hosts
+      # No fields passed so show inventory of existing hosts
   else :
     print("<h2>Monitored Host Inventory</h2>")
     print("<TABLE class='blueTable'><TR><TH>Host<TH>Action</TR>")
@@ -130,16 +143,17 @@ elif mode == "view":
       all_hosts = {}
     print("""
     <TABLE class='blueTable'>
-    <TR><TH COLSPAN=2 ALIGN=CENTER>Configured Hosts</TH></TR>
-    <TR><TH>Full Config<TH>Custom Config</TR>
+    <TR><TH COLSPAN=3 ALIGN=CENTER>Configured Hosts</TH></TR>
+    <TR><TH>Platform<TH>Full Config<TH>Custom Config</TR>
 """)
     for r in all_hosts:
       host = r['_source']['host']
+      platform = r['_source']['platform']
       full_url = "<A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>" + host + "</A>"
       custom_url = "<A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'><FONT COLOR=RED>Create New</FONT></A>"
       if host in custom:
           custom_url = "<A HREF='/cgi-bin/collect?mode=view&host=" + host + "'><FONT COLOR=GREEN>View Existing</FONT></A>"
-      print("<TR><TD ALIGN=CENTER>" + full_url + "</TD><TD>" + custom_url + "</TD></TR>")
+      print("<TR><TD>" + platform + "<TD ALIGN=CENTER>" + full_url + "</TD><TD>" + custom_url + "</TD></TR>")
     print("</TABLE>")
     print("<h5>Append &host=xxx to the URL to jump directly to a host config</h5>")
     print("<h3><A HREF='/cgi-bin/collect?mode=edit'>Add Configuration for New Host</A></h3>")
