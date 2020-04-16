@@ -136,9 +136,9 @@ elif mode == "view":
     for r in all_hosts:
       host = r['_source']['host']
       full_url = "<A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>" + host + "</A>"
-      custom_url = ""
+      custom_url = "<A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'><FONT COLOR=RED>Create New</FONT></A>"
       if host in custom:
-          custom_url = "<A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>" + host + "</A>"
+          custom_url = "<A HREF='/cgi-bin/collect?mode=view&host=" + host + "'><FONT COLOR=GREEN>View Existing</FONT></A>"
       print("<TR><TD ALIGN=CENTER>" + full_url + "</TD><TD>" + custom_url + "</TD></TR>")
     print("</TABLE>")
     print("<h5>Append &host=xxx to the URL to jump directly to a host config</h5>")
