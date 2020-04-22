@@ -44,6 +44,7 @@ def api_get_entities():
       records = x['hits']
     except :
       records = {}
+
     
     return jsonify(records)
 

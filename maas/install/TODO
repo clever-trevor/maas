@@ -1,0 +1,66 @@
+Field Standards
+	entity		The monitored endpoint (hostname, container name, AWS instance, etc)
+	metric_type	The type of monitor (cpu, filesystem) - top level grouping
+	metric_value	The value of that metric
+	metric_instance	An instance of a monitored entity (Total, /opt)
+	metric_name	The name of a specific metric to be collected (cpu_idle, fs_used)	
+	alert_operator	An operator used in evaluating thresholds
+	alert_threshold	The threshold against which to measure a metric
+	support_team	The support queue to send the alert to
+	alert_tag	A list of tags applied to an alert which can be used to identify or group it
+
+Metrics	
+	Get last metric
+		/api/v1/metric/last?entity=<host>&metric_type=<x>&metric_instance=<x>&metric_value=<x>&metric_name=<x>
+	Get metric range
+		/api/v1/metric/range?entity=<host>&metric_type=<x>&metric_instance=<x>&metric_value=<x>&metric_name=<x>&time_start=<x>&time_end=<x>
+
+Entity Centric
+  GET /api/v1/entity DONE
+	Desc : Get list/single entity/entities that has/have been registered with portal
+	Mandatory : None
+	Optional : entity=<x>
+	Default : entity=*
+	Returns : JSON object/list with entity_name/platform/last_registered
+
+Config Centric
+  GET /api/v1/config/entity DONE
+	Desc : Get configuation for an endpoint
+	Mandatory : entity=<x>
+	Optional : mode=live|custom
+	Default : mode=live
+	Returns : Array of configs for full / JSON structure for individual
+
+  GET /api/v1/config/fragment DONE
+	Desc : Return details of a config fragment
+	Mandatory : None
+	Optional : name=<x>
+	Default : name=*
+	Returns : Text document for config fragment
+
+  GET /api/v1/config/alert DONE
+	Desc : Get Alert definition 
+	Mandatory : None
+	Optional : entity=<x>
+	Default : entity=*
+	Returns : Array of documents for all hosts / JSON structure for individual host
+
+Metric Centric
+  GET /api/v1/metric/last 
+	Desc : Get last value for a given metric
+  GET /api/v1/metric/range 
+	Desc : Get metric values over a timeframe
+
+  POST /api/v1/metric
+	Desc : Post a new metric DONE
+	Mandatory : entity=<x>&app_id=<x>&metric_name=<a>&metric_value=<x>
+	Options : None
+	Default : None
+	Returns : URL to view metric in portal
+
+Alert Centric
+  GET /api/v1/alert/history
+	Desc : View alert history for given entity
+  GET /api/v1/alert/last
+	Desc : View most recent result for a given alert config
+
