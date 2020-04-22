@@ -21,24 +21,24 @@ print("Content-Type:text/plain\n")
 es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
 
 fragment_index = "maas_config_fragments"
-host_config_index_in = "maas_config_hosts_require"
-host_config_index_out = "maas_config_hosts_publish"
+entity_config_index_in = "maas_config_entity_require"
+entity_config_index_out = "maas_config_entity_publish"
 config_log = "maas_agent_configure_log_history"
 
 message = ""
 fs = cgi.FieldStorage()
 
 if 'host' in fs:
-  host = fs['host'].value
-  target = host + ".telegraf"
+  entity = fs['host'].value
+  target = entity + ".telegraf"
   
-  message = host
+  message = entity
   platform = ""
 
   # If config already exists then load it
   content = ""
   try:
-    doc = elasticsearch.get_document_by_id(es,host_config_index_out,"_doc",host)['_source']
+    doc = elasticsearch.get_document_by_id(es,entity_config_index_out,"_doc",entity)['_source']
     content = doc['content']
     platform = doc['platform']
     message += " Config already exists"
@@ -59,13 +59,13 @@ if 'host' in fs:
 
     # Get the base config for this host
     # "content" will be built up based on information in incoming request
-    host_frag = elasticsearch.get_document_by_id(es,fragment_index,"_doc",template)['_source']['fragment']
-    content = host_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",host)
+    entity_frag = elasticsearch.get_document_by_id(es,fragment_index,"_doc",template)['_source']['fragment']
+    content = entity_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",entity)
     content = content.replace("%INFLUXDB%",maas['influxdb']['url'])
 
     try : 
-      host_config_in = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config']
-      collect = host_config_in.replace("\\n","\n").replace("\\\"","\"").split()
+      entity_config_in = elasticsearch.get_document_by_id(es,entity_config_index_in,"_doc",entity)['_source']['config']
+      collect = entity_config_in.replace("\\n","\n").replace("\\\"","\"").split()
     except:
       collect = ""
 
@@ -104,14 +104,14 @@ if 'host' in fs:
     message += " New config generated"
   print(content)
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  doc = {"host":host,"content":content,"last_updated":now,"platform":platform}
-  x = elasticsearch.post_document(es,host_config_index_out,"_doc",host,doc)
+  doc = {"entity":entity,"content":content,"last_updated":now,"platform":platform}
+  x = elasticsearch.post_document(es,entity_config_index_out,"_doc",entity,doc)
 
 else:
   message += " No hostname supplied"
 
 
 now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-doc = {"host":host,"message":message,"timestamp":now}
+doc = {"entity":entity,"message":message,"timestamp":now}
 elasticsearch.post_document(es,config_log,"_doc","",doc)
 

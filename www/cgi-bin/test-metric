@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import urllib.parse
 import cgi
 import os
 import configparser
@@ -17,13 +18,18 @@ fs = cgi.FieldStorage()
 if 'metric_name' in fs and 'metric_value' in fs and 'app_id' in fs :
   print("<h2>Metric generated</h2>")
   app_id = fs['app_id'].value
-  host = fs['host'].value
+  entity = fs['entity'].value
   metric_name = fs['metric_name'].value
   metric_value = fs['metric_value'].value
-  string = "statsd,app_id=%s,host=%s,metric_name=%s:%s|c" % (app_id,host,metric_name,metric_value)
+  string = "statsd,app_id=%s,entity=%s,metric_name=%s:%s|c" % (app_id,entity,metric_name,metric_value)
   sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
   sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9125))
   print("<h4>Metric Generated!</h4>")
+  query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND entity='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
+  query = urllib.parse.quote(query)
+  url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+
+  print("<h4><A HREF='%s'>View the metric here</A></H4>" % (url) )
 else :
   print("<h2>Enter your custom metric details below</h2>")
   print("""
@@ -42,7 +48,7 @@ else :
  <TR>
   <TD>Host Name (Lower Case)</TD>
   <TD>
-    <input name="host" id="host" pattern="[a-z0-9\-]+"></input>
+    <input name="entity" id="entity" pattern="[a-z0-9\-]+"></input>
   </TD>
  </TR>
 

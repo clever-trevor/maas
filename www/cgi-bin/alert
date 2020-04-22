@@ -12,14 +12,13 @@ import configparser
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
-
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Monitoring Alert Management</a></h1>")
 print("<hr>")
 
 es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-host_config_index = "maas_config_hosts_publish"
+entity_config_index = "maas_config_entity_publish"
 alert_config_index = "maas_config_alert"
 
 # Pull in URL parameters
@@ -40,23 +39,26 @@ def print_select(id,name,options,match) :
 
 ########### EDIT
 if mode == "edit":
-  # We have passed in the contents and host so we will just set them 
+  # We have passed in the contents and entity so we will just set them 
   # Note : "edit=true" means don't write the detail but pre-populate form (next section)
-  if 'host' in fs and not 'edit' in fs :
-    host = fs['host'].value
-    mon_type = fs['type'].value
-    instance_name = fs['instance_name'].value
-    instance_value = fs['instance_value'].value
-    metric = fs['metric'].value
-    operator = fs['operator'].value
-    threshold = fs['threshold'].value
-    queue = fs['queue'].value
-    tag = fs['tag'].value
+  if 'entity' in fs and not 'edit' in fs :
+    entity = fs['entity'].value
+    metric_type = fs['metric_type'].value
+    metric_instance = fs['metric_instance'].value
+    metric_value = fs['metric_value'].value
+    metric_name = fs['metric_name'].value
+    alert_operator = fs['alert_operator'].value
+    alert_threshold = fs['alert_threshold'].value
+    support_team = fs['support_team'].value
+    try:
+      alert_tag = fs['alert_tag'].value
+    except:
+      alert_tag = ""
 
-    key = "%s:%s:%s:%s:%s" % ( host,mon_type,instance_name,instance_value,metric )
+    key = "%s:%s:%s:%s:%s" % ( entity,metric_type,metric_instance,metric_value,metric_name )
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    doc = { "host":host, "type":mon_type, "instance_name":instance_name,"instance_value":instance_value,"metric":metric,"operator":operator,"threshold":threshold,"queue":queue,"tag":tag,"last_updated":now }
+    doc = { "entity":entity, "metric_type":metric_type, "metric_instance":metric_instance,"metric_value":metric_value,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team,"alert_tag":alert_tag,"last_updated":now }
     # Open alert config
     print("<h4><font color='Red'>** Alert Written to Database **</font></h4>")
     key = key.replace("/","%2F")
@@ -68,114 +70,114 @@ if mode == "edit":
   # Either some detail was missing, or we want to go into form "edit" mode
   else :
     # See if we can get some details from the URL params
-    if 'host' in fs : 
-      host = fs['host'].value
+    if 'entity' in fs : 
+      entity = fs['entity'].value
     else :
-      host = ""
-    if 'type' in fs : 
-      type = fs['type'].value
+      entity = ""
+    if 'metric_type' in fs : 
+      metric_type = fs['metric_type'].value
     else :
-      type = ""
-    if 'instance_name' in fs : 
-      instance_name = fs['instance_name'].value
+      metric_type = ""
+    if 'metric_instance' in fs : 
+      metric_instance = fs['metric_instance'].value
     else :
-      instance_name = ""
-    if 'instance_value' in fs : 
-      instance_value = fs['instance_value'].value
+      metric_instance = ""
+    if 'metric_value' in fs : 
+      metric_value = fs['metric_value'].value
     else :
-      instance_value = ""
-    if 'metric' in fs : 
-      metric = fs['metric'].value
+      metric_value = ""
+    if 'metric_name' in fs : 
+      metric_name = fs['metric_name'].value
     else :
-      metric  = ""
-    if 'operator' in fs : 
-      operator = fs['operator'].value
+      metric_name = ""
+    if 'alert_operator' in fs : 
+      alert_operator = fs['alert_operator'].value
     else :
-      operator = ""
-    if 'threshold' in fs : 
-      threshold = fs['threshold'].value
+      alert_operator = ""
+    if 'alert_threshold' in fs : 
+      alert_threshold = fs['alert_threshold'].value
     else :
-      threshold = ""
-    if 'queue' in fs : 
-      queue = fs['queue'].value
+      alert_threshold = ""
+    if 'support_team' in fs : 
+      support_team = fs['support_team'].value
     else :
-      queue = ""
-    if 'tag' in fs : 
-      tag = fs['tag'].value
+      support_team = ""
+    if 'alert_tag' in fs : 
+      alert_tag = fs['alert_tag'].value
     else :
-      tag = ""
+      alert_tag = ""
 
     # Now lets build the form, populating values if we have them
     print("""
 <html>
-<h2>Configure metric collection for a host</h2>
+<h2>Configure metric collection for an entity </h2>
 <FORM ACTION="/cgi-bin/alert?mode=edit" METHOD="POST">
 <TABLE>
  <TR>
   <TD>Hostname</TD>
   <TD>
     """)
-    # Build list of hosts based on hosts that are currently configured
-    x = elasticsearch.run_search_uri(es,host_config_index,"q=*&size=10000")['hits']
+    # Build list of entities based on entitys that are currently configured
+    x = elasticsearch.run_search_uri(es,entity_config_index,"q=*&size=10000")['hits']
     records = x['hits']
-    hosts = ""
+    entities = ""
     for record in records:
-      hosts += record['_source']['host'] + ","
-    hosts = hosts[:-1]
-    print_select("host","host",hosts,host)
+      entities += record['_source']['entity'] + ","
+    entities = entities[:-1]
+    print_select("entity","entity",entities,entity)
        
     print("""
 
   </TD>
  </TR>
  <TR>
-  <TD>Type</TD>
+  <TD>Metric Type</TD>
   <TD>
   """)
-    print_select("type","type","cpu,disk,procstat,procstat_lookup,http",type)
+    print_select("metric_type","metric_type","cpu,disk,procstat,procstat_lookup,http",metric_type)
     print("""
   </TD>
  </TR>
  <TR>
-  <TD>Instance Name</TD>
+  <TD>Metric Value</TD>
   <TD>
   """)
-    print("<input name='instance_name' id='instance_name' value='" + instance_name + "'>")
-    print("""
-    </input>
-  </TD>
- </TR>
- <TR>
-  <TD>Instance Value</TD>
-  <TD>
-  """)
-    print("<input name='instance_value' id='instance_value' value='" + instance_value + "'>")
+    print("<input name='metric_value' id='metric_value' value='" + metric_value + "'>")
     print("""
     </input>
   </TD>
  </TR>
  <TR>
-  <TD>Metric</TD>
+  <TD>Metric Instance</TD>
   <TD>
   """)
-    print("<input name='metric' id='metric' value='" + metric + "'>")
+    print("<input name='metric_instance' id='metric_instance' value='" + metric_instance + "'>")
     print("""
     </input>
   </TD>
  </TR>
  <TR>
-  <TD>Operator</TD>
+  <TD>Metric Name</TD>
   <TD>
   """)
-    print_select("operator","operator","<,<=,>,<=,=",operator)
+    print("<input name='metric_name' id='metric_name' value='" + metric_name + "'>")
+    print("""
+    </input>
+  </TD>
+ </TR>
+ <TR>
+  <TD>Alert Operator</TD>
+  <TD>
+  """)
+    print_select("alert_operator","alert_operator","<,<=,>,<=,=",alert_operator)
     print("""
   </TD>
  </TR>
  <TR>
-  <TD>Threshold</TD>
+  <TD>Alert Threshold</TD>
   <TD>
   """)
-    print("<input name='threshold' id='threshold' value='" + threshold+ "'>")
+    print("<input name='alert_threshold' id='alert_threshold' value='" + alert_threshold+ "'>")
     print("""
     </input>
   </TD>
@@ -184,7 +186,7 @@ if mode == "edit":
   <TD>Support Queue</TD>
   <TD>
   """)
-    print("<input name='queue' id='queue' value='" + queue + "'>")
+    print("<input name='support_team' id='support_team' value='" + support_team + "'>")
     print("""
     </input>
   </TD>
@@ -193,7 +195,7 @@ if mode == "edit":
   <TD>Tag (Optional)</TD>
   <TD>
   """)
-    print("<input name='tag' id='tag' value='" + tag + "'>")
+    print("<input name='alert_tag' id='alert_tag' value='" + alert_tag + "'>")
     print("""
     </input>
   </TD>
@@ -208,7 +210,7 @@ if mode == "edit":
 </FORM>
 
 <B>Example Metric</B><BR>
-<TABLE border=1><TR><TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metrics</TR>
+<TABLE border=1><TR><TH>Metric Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name</TR>
 <TR><TD>cpu<TD>cpu<TD>cpu-total<TD>usage_idle<BR>usage_system<BR>usage_user</TR>
 <TR><TD>disk<TD>path<TD>/opt<BR>C:<TD>free<BR>inodes_free<BR>used<BR>used_percent</TR>
 <TR><TD>procstat<TD>exe<TD>sshd<BR>syslogd<TD>cpu_time_idle<BR>cpu_time_user<BR>cpu_time_system<BR>memory_usage<BR>num_threads</TR>
@@ -224,41 +226,44 @@ elif mode == "view":
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   alerts = x['hits']
 
-  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Support Queue<TH>Tag</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
 
   for r in alerts:
     r = r['_source']
-    host = r['host']
-    mon_type = r['type']
-    instance_name = r['instance_name']
-    instance_value = r['instance_value']
-    metric = r['metric']
-    operator = r['operator']
-    threshold = r['threshold']
-    queue = r['queue']
+    entity = r['entity']
+    metric_type = r['metric_type']
+    metric_instance = r['metric_instance']
+    metric_value = r['metric_value']
+    metric_name = r['metric_name']
+    alert_operator = r['alert_operator']
+    alert_threshold = r['alert_threshold']
+    support_team = r['support_team']
     try :
-      tag = r['tag']
+      alert_tag = r['alert_tag']
     except:
-      tag = ""
+      alert_tag = ""
 
-    params = "&host=%s&type=%s&instance_name=%s&instance_value=%s&metric=%s&operator=%s&threshold=%s&queue=%s&tag=%s&edit=true" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag)
+    params = "&entity=%s&metric_type=%s&metric_instance=%s&metric_value=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
     url = "/cgi-bin/alert?" 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( host,mon_type,instance_name,instance_value,metric,operator,threshold,queue,tag,url + "mode=edit" + params, url + "mode=delete" + params))
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params))
   print("</TABLE>")
   print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Add New Alert</A></h3>")
 
 elif mode == "delete" :
-  host = fs['host'].value
-  mon_type = fs['type'].value
-  instance_name = fs['instance_name'].value
-  instance_value = fs['instance_value'].value
-  metric = fs['metric'].value
-  operator = fs['operator'].value
-  threshold = fs['threshold'].value
-  queue = fs['queue'].value
-  tag = fs['tag'].value
+  entity = fs['entity'].value
+  metric_type = fs['metric_type'].value
+  metric_instance = fs['metric_instance'].value
+  metric_value = fs['metric_value'].value
+  metric_name = fs['metric_name'].value
+  alert_operator = fs['alert_operator'].value
+  alert_threshold = fs['alert_threshold'].value
+  support_team = fs['support_team'].value
+  try:
+    alert_tag = fs['alert_tag'].value
+  except:
+    alert_tag = ""
 
-  key = "%s:%s:%s:%s:%s" % ( host,mon_type,instance_name,instance_value,metric )
+  key = "%s:%s:%s:%s:%s" % ( entity,metric_type,metric_instance,metric_value,metric_name )
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
   # Open alert config
@@ -266,12 +271,6 @@ elif mode == "delete" :
   key = key.replace("/","%2F")
   x = elasticsearch.delete_document_by_id(es,alert_config_index,"_doc",key)
   print("<h3><A HREF='/cgi-bin/alert?mode=view'>View Alert Configuration</A></H3>")
-
-elif mode == "test":
-  print("<h2>Running Alert Checks</h2>")
-  test = subprocess.run(["/app/maas/scripts/alert.py"])
-  print("<h4>Test run completed</h4>")
-  print("<h3><A HREF='" + maas['views']['alert_history'] + "'>View History</A></h3>")
 
 print("</html>")
 

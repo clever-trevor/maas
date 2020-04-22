@@ -1,0 +1,125 @@
+#!/usr/bin/python3
+
+import urllib.parse
+from urllib.request import Request,urlopen
+import json
+import time
+import datetime
+import elasticsearch
+import configparser
+import influx
+
+maas = configparser.RawConfigParser()
+maas.read('/app/maas/conf/env')
+
+def html_header():
+  print("Content-Type:text/html;\n")
+  print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
+  print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Alert Evaluation</a></h1>")
+  print("<hr>")
+
+def parse_alerts():
+  print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
+  x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
+  records = x['hits']
+  tests = 0
+  passes = 0
+  alerts = 0
+  fails = 0
+  for r in records:
+    r = r['_source']
+    entity = r['entity']
+    metric_type = r['metric_type']
+    metric_instance = r['metric_instance']
+    metric_value = r['metric_value']
+    metric_name = r['metric_name']
+    alert_operator = r['alert_operator']
+    alert_threshold = r['alert_threshold']
+    support_team = r['support_team']
+
+    doc = {"entity":entity,"metric_type":metric_type,"metric_instance":metric_instance,"metric_value":metric_value,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team}
+    if metric_type == "disk" and metric_instance == "path" and ":" in metric_value :
+      metric_value = '\\\\' + metric_value
+
+    # Now test this
+    status,actual,time_stamp = test_metric(entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold)
+    actual = "{:.2f}".format(actual)
+    doc['status'] = status + " Actual:" + actual + " TimeStamp:" + time_stamp
+
+    logMsg(log_current,doc)
+
+    if "ALERT" in status:
+      alerts += 1
+      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_type,time_stamp,time_stamp,entity)
+      if metric_instance != "" : 
+        query += " AND %s = \'%s\'" % ( metric_instance,metric_value )
+      query = urllib.parse.quote(query)
+      url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+      doc['url'] = url
+      escalate_alert(doc,url)
+    elif "PASS" in status:
+      passes += 1
+    else :
+      fails += 1
+        
+
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_type,metric_value,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,time_stamp) )
+
+    tests += 1
+
+    print("</TABLE>")
+
+    print("<H3>%s Tests evaluated<BR>Passes=%s Alerts=%s Failed=%s</H3>" % ( tests, passes,alerts,fails))
+
+  return tests
+
+def escalate_alert(doc,url):
+  logMsg(alert_history,doc)
+  return
+
+def test_metric(entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold) :
+
+  query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric_name,metric_type,entity,metric_value,metric_instance) 
+  value, time_stamp = influx.get_metric(influx_url,query)
+  result = influx.test_metric(value,alert_operator,alert_threshold)
+  time_stamp = time_stamp.replace("T"," ").replace("Z","")
+  if time_stamp == "" : 
+      status = "NODATARETURNED"
+      value = 0
+      time_stamp = 0
+  elif result == True :
+    status = "ALERT"
+  else :
+    status = "PASS"
+
+  return status,value,time_stamp
+
+def logMsg(index,doc) :
+  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+  doc['timestamp'] = now
+  elasticsearch.post_document(es,index,"_doc","",doc)
+
+def main():
+  html_header()
+  tests = parse_alerts()
+  return tests
+
+log_current = "maas_alert_log_current"
+alert_history = "maas_alert_log_history"
+alert_config_index = "maas_config_alert"
+# Set Elasticsearch object
+es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
+
+# Delete old records from the "current" log
+doc = { "query":{"match_all": {} } }
+x = elasticsearch.es_function(es,log_current,"_delete_by_query?conflicts=proceed",doc,"POST")
+
+influx_url = maas['influxdb']['url'] + "/query"
+start = time.process_time()
+
+tests = str(main())
+
+time_taken = str(time.process_time() - start)
+doc = { "entity":"summary", "summary" : "Tests:" + tests + " Time Taken:" + time_taken}
+logMsg(log_current,doc)
+

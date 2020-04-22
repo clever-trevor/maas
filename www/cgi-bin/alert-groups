@@ -7,7 +7,7 @@ import influx
 import datetime
 import configparser
 
-# Read in the config for this host
+# Read in the config for this entity
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
@@ -30,30 +30,30 @@ print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></hea
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Group Alert Management</a></h1>")
 print("<hr>")
 
-tag_in = ""
-if 'tag' in fs :
-  tag_in = fs['tag'].value
+alert_tag_in = ""
+if 'alert_tag' in fs :
+  alert_tag_in = fs['alert_tag'].value
 else:
-  print("<H3>You need to pass in a parameter called <b>tag</b></H3>")
-  print("<H4>Available tags below</H4>")
-  query = {"size":0,"aggs":{"uniq_tags":{"terms":{"field":"tag.keyword"}}}}
-  x = elasticsearch.run_search(es,alert_config_index,query)['aggregations']['uniq_tags']['buckets']
+  print("<H3>You need to pass in a parameter called <b>alert_tag</b></H3>")
+  print("<H4>Available alert_tags below</H4>")
+  query = {"size":0,"aggs":{"uniq_alert_tags":{"terms":{"field":"alert_tag.keyword"}}}}
+  x = elasticsearch.run_search(es,alert_config_index,query)['aggregations']['uniq_alert_tags']['buckets']
   print("<TABLE class='blueTable'><TR><TH>Tag</TR>")
-  for tag in x :
+  for alert_tag in x :
     print("<TR><TD>")
-    mytags = tag['key'].split()
-    for mytag in mytags:
-      print("<A HREF='/cgi-bin/alert-groups?tag=%s'>%s</A>" % ( mytag,mytag))
+    myalert_tags = alert_tag['key'].split()
+    for myalert_tag in myalert_tags:
+      print("<A HREF='/cgi-bin/alert-groups?alert_tag=%s'>%s</A>" % ( myalert_tag,myalert_tag))
     print("</TD></TR>")
   print("</TABLE>")
   exit()
 
-# Build Elastic query to return all records which match the supplied tag
-query = "q=tag.keyword:*" + tag_in + "*"
+# Build Elastic query to return all records which match the supplied alert_tag
+query = "q=alert_tag.keyword:*" + alert_tag_in + "*"
 x = elasticsearch.run_search_uri(es,alert_config_index, query + "&size=10000")['hits']
 # If no results returned, then drop out
 if x['total'] == 0:
-  print("<h2>No tests found for Tag <i>%s</i></h2>" % ( tag_in ))
+  print("<h2>No tests found for Tag <i>%s</i></h2>" % ( alert_tag_in ))
   exit()
 
 # Bring the records into a list
@@ -62,72 +62,72 @@ records = x['hits']
 # Test mode means to execute the tests
 if mode == "test" :
 
-  print("<H2>Running tests in group <i>%s</i><h2>" % (tag_in))
+  print("<H2>Running tests in group <i>%s</i><h2>" % (alert_tag_in))
 
   # Build a table of each test executed to show at the end
-  monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
+  monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
 
   status = {}  # Dictionary used to store the overall monitors and status
   for r in records :
     r = r['_source']
-    host = r['host']
-    metric_type = r['type']
-    instance_name = r['instance_name']
-    instance_value = r['instance_value']
-    metric = r['metric']
-    operator = r['operator']
-    threshold = r['threshold']
-    queue = r['queue']
-    tag = r['tag']
+    entity = r['entity']
+    metric_type = r['metric_type']
+    metric_instance = r['metric_instance']
+    metric_value = r['metric_value']
+    metric_name = r['metric_name']
+    alert_operator = r['alert_operator']
+    alert_threshold = r['alert_threshold']
+    support_team = r['support_team']
+    alert_tag = r['alert_tag']
 
     # Run an Influx query for each metric
-    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' " % ( metric, metric_type, host )
-    if instance_name != "" :
-      query += " AND %s='%s'" % ( instance_name, instance_value )
+    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE entity = '%s' " % ( metric_name, metric_type, entity )
+    if metric_instance != "" :
+      query += " AND %s='%s'" % ( metric_instance, metric_value )
     value, time_stamp = influx.get_metric(influx_url,query)
 
     # Test the result
-    result = influx.test_metric(value,operator,threshold)
+    result = influx.test_metric(value,alert_operator,alert_threshold)
     # Reformat the time stamp field
     time_stamp = time_stamp.replace("T"," ").replace("Z"," ")
 
     # If first record, then create an initial dictionary entry with some defaults
-    if tag_in not in status :
-      status[tag_in] = {}
-      status[tag_in]['outcome'] = "PASS"
-      status[tag_in]['tests'] = 0
-      status[tag_in]['failed'] = 0
-      status[tag_in]['passed'] = 0
+    if alert_tag_in not in status :
+      status[alert_tag_in] = {}
+      status[alert_tag_in]['outcome'] = "PASS"
+      status[alert_tag_in]['tests'] = 0
+      status[alert_tag_in]['failed'] = 0
+      status[alert_tag_in]['passed'] = 0
 
     # Add to number of tests found
-    status[tag_in]['tests'] += 1
+    status[alert_tag_in]['tests'] += 1
 
     # Result of "true" means the condition was true.  i.e. failed
     if result is True or value == -1 :
-      status[tag_in]['outcome'] = "FAIL"
-      status[tag_in]['failed'] += 1
+      status[alert_tag_in]['outcome'] = "FAIL"
+      status[alert_tag_in]['failed'] += 1
       result = "<FONT Color=Red>FAIL</font>"
     else :
-      status[tag_in]['passed'] += 1
+      status[alert_tag_in]['passed'] += 1
       result = "<FONT Color=Green>PASS</font>"
 
     # Add record to the monitors table
-    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (tag,host,metric_type,instance_name,instance_value,metric,operator,threshold,str(value),str(result),time_stamp)
+    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,str(value),str(result),time_stamp)
 
   monitors += "</TABLE>"
 
   # Print one line summary of all tests executed
   print("<TABLE class='blueTable'><TR><TH>Tag<TH>Total Tests<TH>Failed<TH>Passed<TH>Outcome</TR>")
-  for tag in status:
-    outcome = status[tag]['outcome']
+  for alert_tag in status:
+    outcome = status[alert_tag]['outcome']
     if outcome == "FAIL" :
       outcome = "<FONT Color=Red>FAIL</font>"
     else :
       outcome = "<FONT Color=Green>PASS</font>"
-    tests = status[tag]['tests']
-    failed = status[tag]['failed']
-    passed = status[tag]['passed']
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (tag,tests,failed,passed,outcome))
+    tests = status[alert_tag]['tests']
+    failed = status[alert_tag]['failed']
+    passed = status[alert_tag]['passed']
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,tests,failed,passed,outcome))
   
   print("</TABLE>")
   # Now print the detailed table 
@@ -136,22 +136,22 @@ if mode == "test" :
 
 # View Mode
 else :
-  print("<h2>Viewing matches for tag <i>%s</i></h2>" % ( tag_in ))
-  print("<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Host<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
+  print("<h2>Viewing matches for alert_tag <i>%s</i></h2>" % ( alert_tag_in ))
+  print("<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
 
   # Loop through each record that was found
   for r in records :
     r = r['_source']
-    host = r['host']
-    metric_type = r['type']
-    instance_name = r['instance_name']
-    instance_value = r['instance_value']
-    metric = r['metric']
-    operator = r['operator']
-    threshold = r['threshold']
-    queue = r['queue']
-    tag= r['tag']
+    entity = r['entity']
+    metric_type = r['metric_type']
+    metric_instance = r['metric_instance']
+    metric_value = r['metric_value']
+    metric_name = r['metric_name']
+    alert_operator = r['alert_operator']
+    alert_threshold = r['alert_threshold']
+    support_team = r['support_team']
+    alert_tag= r['alert_tag']
     # And print it
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (tag,host,metric_type,instance_name,instance_value,metric,operator,threshold))
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold))
 
 print("</html>")

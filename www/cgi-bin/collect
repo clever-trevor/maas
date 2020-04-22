@@ -17,8 +17,8 @@ print("<hr>")
 
 es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pass":maas['elastic']['pass'] }
 
-host_config_index_in = "maas_config_hosts_require"
-host_config_index_out = "maas_config_hosts_publish"
+entity_config_index_in = "maas_config_entity_require"
+entity_config_index_out = "maas_config_entity_publish"
 
 fs = cgi.FieldStorage()
 try:
@@ -28,38 +28,37 @@ except:
 
 ########### EDIT
 if mode == "edit":
-  # If we have a hostname and config, then write the config out
-  if 'content' in fs and 'host' in fs :
-    host = fs['host'].value
+  # If we have a entityname and config, then write the config out
+  if 'content' in fs and 'entity' in fs :
+    entity = fs['entity'].value
     content = fs['content'].value
-    host = fs['host'].value
-    platform = elasticsearch.get_document_by_id(es,host_config_index_out,"_doc",host)['_source']['platform']
+    platform = elasticsearch.get_document_by_id(es,entity_config_index_out,"_doc",entity)['_source']['platform']
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    doc = {"host":host,"config":content,"platform":platform,"last_updated":now}
-    x = elasticsearch.post_document(es,host_config_index_in,"_doc",host,doc) 
+    doc = {"entity":entity,"config":content,"platform":platform,"last_updated":now}
+    x = elasticsearch.post_document(es,entity_config_index_in,"_doc",entity,doc) 
 
-    urllib.request.urlopen(maas['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + host + "&reset=true")
-    print("<h2>Config written, view <A HREF='/cgi-bin/collect?mode=view&host=" + host + "'>here</A></h2>")
+    urllib.request.urlopen(maas['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity + "&reset=true")
+    print("<h2>Config written, view <A HREF='/cgi-bin/collect?mode=view&entity=" + entity + "'>here</A></h2>")
     print("<h5>Agent needes to be retarted to pick up new config</h5>")
-    print("<h3>Click <A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>here</A> to see Telgraf config</h3>")
-  # Only a host passed, so try and read existing config and then show form
-  elif 'host' in fs :
-    host = fs['host'].value
+    print("<h3>Click <A HREF='/cgi-bin/telegraf-configure?host=" + entity + "'>here</A> to see Telgraf config</h3>")
+  # Only a entity passed, so try and read existing config and then show form
+  elif 'entity' in fs :
+    entity = fs['entity'].value
     try :
-      doc = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)
+      doc = elasticsearch.get_document_by_id(es,entity_config_index_in,"_doc",entity)
       content = doc['_source']['config']
     except :
       content = ""
 
     print("""
 <html>
-Configure metric collection for a host
+Configure metric collection for a entity
 <FORM ACTION="/cgi-bin/collect?mode=edit" METHOD="POST">
 <TABLE>
  <TR>
   <TD>Hostname</TD>
   <TD>
-    <input name="host" id="host" value=""" + host + """></input>
+    <input name="entity" id="entity" value=""" + entity + """></input>
   </TD>
   <TD>&nbsp;&nbsp;&nbsp;</TD>
   <TD> </TD>
@@ -91,70 +90,70 @@ template=<I>pre-configure-component-template</I><BR>
 <BR><BR>
 
 """)
-      # No fields passed so show inventory of existing hosts
+      # No fields passed so show inventory of existing entitys
   else :
     print("<h2>Monitored Host Inventory</h2>")
     print("<TABLE class='blueTable'><TR><TH>Host<TH>Action</TR>")
     try : 
-      x = elasticsearch.run_search_uri(es,host_config_index_out,"q=*&size=10000")['hits']
+      x = elasticsearch.run_search_uri(es,entity_config_index_out,"q=*&size=10000")['hits']
       records = x['hits']
     except :
       records = {}
     for r in records:
-      host = r['_source']['host'] 
-      print("<TR><TD>" + host + "<TD><A HREF='/cgi-bin/collect?host=" + host + "&mode=edit'>Edit Config</A></TR>")
+      entity = r['_source']['entity'] 
+      print("<TR><TD>" + entity + "<TD><A HREF='/cgi-bin/collect?entity=" + entity + "&mode=edit'>Edit Config</A></TR>")
     print("</TABLE>")
 
    
 #################### VIEW
 elif mode == "view":
-  if "host" in fs: 
-    host = fs['host'].value
+  if "entity" in fs: 
+    entity = fs['entity'].value
     try:
-      conf = elasticsearch.get_document_by_id(es,host_config_index_in,"_doc",host)['_source']['config'].split()
+      conf = elasticsearch.get_document_by_id(es,entity_config_index_in,"_doc",entity)['_source']['config'].split()
 
-      print("<h2>Showing custom collection for host " + host + "</h2>")
+      print("<h2>Showing custom collection for entity " + entity + "</h2>")
       print("<TABLE class='blueTable'><TR><TH>Monitor Type</TH><TH>Instance</TH></TR>")
       for line in conf:
         x = line.split("=")
         print("<TR><TD>" + x[0] + "</TD><TD>" + x[1] + "</TD></TR>")
       print("</TABLE>")
-      print("<h3><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Edit Custom Config</A></h3>")
-      print("<h3><A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>View Full Config</A></h3>")
+      print("<h3><A HREF='/cgi-bin/collect?mode=edit&entity=" + entity + "'>Edit Custom Config</A></h3>")
+      print("<h3><A HREF='/cgi-bin/telegraf-configure?host=" + entity + "'>View Full Config</A></h3>")
     except:
-      print("<h3>No Custom Configuration found for host %s</h3>" %  (host))
-      print("<h4><A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'>Add New Configuration here </A></h4>")
+      print("<h3>No Custom Configuration found for entity %s</h3>" %  (entity))
+      print("<h4><A HREF='/cgi-bin/collect?mode=edit&entity=" + entity + "'>Add New Configuration here </A></h4>")
 
   else :
-    # Here we're going to get all hosts which have a config and display
+    # Here we're going to get all entitys which have a config and display
     # in a table.  If there is a custom config, then we'll show that too
     custom = {}
     try : 
-      x = elasticsearch.run_search_uri(es,host_config_index_out,"q=*&size=10000")['hits']
-      all_hosts = x['hits']
-      all_hosts = sorted(all_hosts,key=lambda i: i['_source']['host'])
-      x = elasticsearch.run_search_uri(es,host_config_index_in,"q=*&size=10000")['hits']
-      custom_hosts = x['hits']
-      custom_hosts = sorted(custom_hosts,key=lambda i: i['_source']['host'])
-      for r in custom_hosts:
-        host = r['_source']['host']
-        custom[host] = True
+      x = elasticsearch.run_search_uri(es,entity_config_index_out,"q=*&size=10000")['hits']
+      all_entitys = x['hits']
+      all_entitys = sorted(all_entitys,key=lambda i: i['_source']['entity'])
+      x = elasticsearch.run_search_uri(es,entity_config_index_in,"q=*&size=10000")['hits']
+      custom_entitys = x['hits']
+      custom_entitys = sorted(custom_entitys,key=lambda i: i['_source']['entity'])
+      for r in custom_entitys:
+        entity = r['_source']['entity']
+        custom[entity] = True
     except :
-      all_hosts = {}
+      all_entitys = {}
     print("""
     <TABLE class='blueTable'>
     <TR><TH COLSPAN=3 ALIGN=CENTER>Configured Hosts</TH></TR>
     <TR><TH>Platform<TH>Full Config<TH>Custom Config</TR>
 """)
-    for r in all_hosts:
-      host = r['_source']['host']
+    for r in all_entitys:
+      entity = r['_source']['entity']
       platform = r['_source']['platform']
-      full_url = "<A HREF='/cgi-bin/telegraf-configure?host=" + host + "'>" + host + "</A>"
-      custom_url = "<A HREF='/cgi-bin/collect?mode=edit&host=" + host + "'><FONT COLOR=RED>Create New</FONT></A>"
-      if host in custom:
-          custom_url = "<A HREF='/cgi-bin/collect?mode=view&host=" + host + "'><FONT COLOR=GREEN>View Existing</FONT></A>"
+      full_url = "<A HREF='/cgi-bin/telegraf-configure?host=" + entity + "'>" + entity + "</A>"
+      custom_url = "<A HREF='/cgi-bin/collect?mode=edit&entity=" + entity + "'><FONT COLOR=RED>Create New</FONT></A>"
+      if entity in custom:
+          custom_url = "<A HREF='/cgi-bin/collect?mode=view&entity=" + entity + "'><FONT COLOR=GREEN>View Existing</FONT></A>"
       print("<TR><TD>" + platform + "<TD ALIGN=CENTER>" + full_url + "</TD><TD>" + custom_url + "</TD></TR>")
     print("</TABLE>")
-    print("<h5>Append &host=xxx to the URL to jump directly to a host config</h5>")
+    print("<h5>Append &entity=xxx to the URL to jump directly to a entity config</h5>")
     print("<h3><A HREF='/cgi-bin/collect?mode=edit'>Add Configuration for New Host</A></h3>")
       
