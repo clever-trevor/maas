@@ -53,7 +53,7 @@ Metric Centric
 
   POST /api/v1/metric
 	Desc : Post a new metric DONE
-	Mandatory : entity=<x>&app_id=<x>&metric_name=<a>&metric_value=<x>
+	Mandatory : entity=<x>&app_id=<x>&metric_name=<x>&metric_value=<x>
 	Options : None
 	Default : None
 	Returns : URL to view metric in portal
