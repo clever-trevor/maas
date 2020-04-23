@@ -43,9 +43,9 @@ if mode == "edit":
   # Note : "edit=true" means don't write the detail but pre-populate form (next section)
   if 'entity' in fs and not 'edit' in fs :
     entity = fs['entity'].value
-    metric_type = fs['metric_type'].value
+    metric_class = fs['metric_class'].value
+    metric_object = fs['metric_object'].value
     metric_instance = fs['metric_instance'].value
-    metric_value = fs['metric_value'].value
     metric_name = fs['metric_name'].value
     alert_operator = fs['alert_operator'].value
     alert_threshold = fs['alert_threshold'].value
@@ -55,10 +55,10 @@ if mode == "edit":
     except:
       alert_tag = ""
 
-    key = "%s:%s:%s:%s:%s" % ( entity,metric_type,metric_instance,metric_value,metric_name )
+    key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    doc = { "entity":entity, "metric_type":metric_type, "metric_instance":metric_instance,"metric_value":metric_value,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team,"alert_tag":alert_tag,"last_updated":now }
+    doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag, "last_updated":now }
     # Open alert config
     print("<h4><font color='Red'>** Alert Written to Database **</font></h4>")
     key = key.replace("/","%2F")
@@ -74,18 +74,18 @@ if mode == "edit":
       entity = fs['entity'].value
     else :
       entity = ""
-    if 'metric_type' in fs : 
-      metric_type = fs['metric_type'].value
+    if 'metric_class' in fs : 
+      metric_class = fs['metric_class'].value
     else :
-      metric_type = ""
+      metric_class = ""
+    if 'metric_object' in fs : 
+      metric_object = fs['metric_object'].value
+    else :
+      metric_object = ""
     if 'metric_instance' in fs : 
       metric_instance = fs['metric_instance'].value
     else :
       metric_instance = ""
-    if 'metric_value' in fs : 
-      metric_value = fs['metric_value'].value
-    else :
-      metric_value = ""
     if 'metric_name' in fs : 
       metric_name = fs['metric_name'].value
     else :
@@ -111,6 +111,7 @@ if mode == "edit":
     print("""
 <html>
 <h2>Configure metric collection for an entity </h2>
+<h4>Set the condition so that it will evaluate to true when an alert should be generated</h4>
 <FORM ACTION="/cgi-bin/alert?mode=edit" METHOD="POST">
 <TABLE>
  <TR>
@@ -131,18 +132,18 @@ if mode == "edit":
   </TD>
  </TR>
  <TR>
-  <TD>Metric Type</TD>
+  <TD>Metric Class</TD>
   <TD>
   """)
-    print_select("metric_type","metric_type","cpu,disk,procstat,procstat_lookup,http",metric_type)
+    print_select("metric_class","metric_class","cpu,disk,procstat,procstat_lookup,http",metric_class)
     print("""
   </TD>
  </TR>
  <TR>
-  <TD>Metric Value</TD>
+  <TD>Metric Object</TD>
   <TD>
   """)
-    print("<input name='metric_value' id='metric_value' value='" + metric_value + "'>")
+    print("<input name='metric_object' id='metric_object' value='" + metric_object + "'>")
     print("""
     </input>
   </TD>
@@ -209,8 +210,8 @@ if mode == "edit":
 </TABLE>
 </FORM>
 
-<B>Example Metric</B><BR>
-<TABLE border=1><TR><TH>Metric Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name</TR>
+<B>Example Metrics</B><BR>
+<TABLE border=1><TR><TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name</TR>
 <TR><TD>cpu<TD>cpu<TD>cpu-total<TD>usage_idle<BR>usage_system<BR>usage_user</TR>
 <TR><TD>disk<TD>path<TD>/opt<BR>C:<TD>free<BR>inodes_free<BR>used<BR>used_percent</TR>
 <TR><TD>procstat<TD>exe<TD>sshd<BR>syslogd<TD>cpu_time_idle<BR>cpu_time_user<BR>cpu_time_system<BR>memory_usage<BR>num_threads</TR>
@@ -226,14 +227,14 @@ elif mode == "view":
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   alerts = x['hits']
 
-  print("<TABLE class='blueTable'><TR><TH>Host<TH>Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
 
   for r in alerts:
     r = r['_source']
     entity = r['entity']
-    metric_type = r['metric_type']
+    metric_class = r['metric_class']
+    metric_object = r['metric_object']
     metric_instance = r['metric_instance']
-    metric_value = r['metric_value']
     metric_name = r['metric_name']
     alert_operator = r['alert_operator']
     alert_threshold = r['alert_threshold']
@@ -243,17 +244,17 @@ elif mode == "view":
     except:
       alert_tag = ""
 
-    params = "&entity=%s&metric_type=%s&metric_instance=%s&metric_value=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
+    params = "&entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
     url = "/cgi-bin/alert?" 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params))
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params))
   print("</TABLE>")
   print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Add New Alert</A></h3>")
 
 elif mode == "delete" :
   entity = fs['entity'].value
-  metric_type = fs['metric_type'].value
+  metric_class = fs['metric_class'].value
+  metric_object = fs['metric_object'].value
   metric_instance = fs['metric_instance'].value
-  metric_value = fs['metric_value'].value
   metric_name = fs['metric_name'].value
   alert_operator = fs['alert_operator'].value
   alert_threshold = fs['alert_threshold'].value
@@ -263,7 +264,7 @@ elif mode == "delete" :
   except:
     alert_tag = ""
 
-  key = "%s:%s:%s:%s:%s" % ( entity,metric_type,metric_instance,metric_value,metric_name )
+  key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
   now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
   # Open alert config

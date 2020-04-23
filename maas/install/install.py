@@ -48,11 +48,12 @@ def create_indices ():
 
 def create_symlinks():
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
-  os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
+  
+  os.popen("ln -s /app/maas/python/influx.py        /app/maas/api/influx.py")
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/api/elasticsearch.py")
-  os.popen("ln -s /app/maas/python/influx.py /app/www/cgi-bin/influx.py")
-  os.popen("ln -s /app/maas/python/influx.py /app/maas/scripts/influx.py")
-  os.popen("ln -s /app/maas/python/influx.py /app/maas/api/influx.py")
+
+  os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
+  os.popen("ln -s /app/maas/python/influx.py        /app/www/cgi-bin/influx.py")
  
 es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
 

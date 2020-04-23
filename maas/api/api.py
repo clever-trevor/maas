@@ -151,9 +151,9 @@ def api_get_alert():
 # GET
 #  /api/v1/metric/last  Get last value for a given metric
 #    entity=
-#    metric_type=
+#    metric_class=
 #    metric_name=
-#    metric_value=
+#    metric_object=
 #    metric_instance=
 @app.route('/api/v1/metric/last', methods=['GET'])
 def api_get_metric_last():

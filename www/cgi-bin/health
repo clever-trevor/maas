@@ -53,11 +53,11 @@ status = {}  # Dictionary used to store the overall monitors and status
 for r in records :
   r = r['_source']
   entity = r['entity']
-  metric_type = "system"
+  metric_class = "system"
   metric_name = "uptime"
 
   # Run an Influx query for each metric
-  query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' GROUP BY entity" % ( metric_name, metric_type, entity)
+  query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' GROUP BY entity" % ( metric_name, metric_class, entity)
   value, time_stamp = influx.get_metric(influx_url,query)
 
   # Work out last reboot based on uptime

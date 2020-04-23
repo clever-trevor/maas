@@ -15,21 +15,24 @@ print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Generate Test M
 print("<hr>")
 
 fs = cgi.FieldStorage()
-if 'metric_name' in fs and 'metric_value' in fs and 'app_id' in fs :
-  print("<h2>Metric generated</h2>")
-  app_id = fs['app_id'].value
-  entity = fs['entity'].value
-  metric_name = fs['metric_name'].value
-  metric_value = fs['metric_value'].value
-  string = "statsd,app_id=%s,entity=%s,metric_name=%s:%s|c" % (app_id,entity,metric_name,metric_value)
-  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-  sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9125))
-  print("<h4>Metric Generated!</h4>")
-  query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND entity='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
-  query = urllib.parse.quote(query)
-  url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+if 'metric_name' in fs and 'metric_object' in fs and 'app_id' in fs :
+  try:
+    app_id = fs['app_id'].value
+    entity = fs['entity'].value
+    metric_name = fs['metric_name'].value
+    metric_value = fs['metric_value'].value
+    string = "statsd,app_id=%s,entity=%s,metric_name=%s:%s|c" % (app_id,entity,metric_name,metric_value)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9125))
+    print("<h4>Metric Generated!</h4>")
+    query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND host ='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
+    query = urllib.parse.quote(query)
+    url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
-  print("<h4><A HREF='%s'>View the metric here</A></H4>" % (url) )
+    print("<h4><A HREF='%s'>View the metric here</A></H4>" % (url) )
+  except:
+    print("<h4>Problem generating metric - please check input values")
+
 else :
   print("<h2>Enter your custom metric details below</h2>")
   print("""
@@ -62,7 +65,7 @@ else :
  <TR>
   <TD>Metric Value (Numeric only)</TD>
   <TD>
-    <input name="metric_value" id="metric_Value" pattern="[0-9\.]+"></input>
+    <input name="metric_value" id="metric_value" pattern="[0-9\.]+"></input>
   </TD>
  </TR>
 

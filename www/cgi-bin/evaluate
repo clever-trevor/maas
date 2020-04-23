@@ -19,7 +19,7 @@ def html_header():
   print("<hr>")
 
 def parse_alerts():
-  print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Type<TH>Metric Value<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
+  print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
   x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
   records = x['hits']
   tests = 0
@@ -29,20 +29,20 @@ def parse_alerts():
   for r in records:
     r = r['_source']
     entity = r['entity']
-    metric_type = r['metric_type']
+    metric_class = r['metric_class']
+    metric_object = r['metric_object']
     metric_instance = r['metric_instance']
-    metric_value = r['metric_value']
     metric_name = r['metric_name']
     alert_operator = r['alert_operator']
     alert_threshold = r['alert_threshold']
     support_team = r['support_team']
 
-    doc = {"entity":entity,"metric_type":metric_type,"metric_instance":metric_instance,"metric_value":metric_value,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team}
-    if metric_type == "disk" and metric_instance == "path" and ":" in metric_value :
-      metric_value = '\\\\' + metric_value
+    doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team}
+    if metric_class == "disk" and metric_instance == "path" and ":" in metric_object :
+      metric_object = '\\\\' + metric_object
 
     # Now test this
-    status,actual,time_stamp = test_metric(entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold)
+    status,actual,time_stamp = test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold)
     actual = "{:.2f}".format(actual)
     doc['status'] = status + " Actual:" + str(actual) + " TimeStamp:" + (time_stamp)
 
@@ -50,9 +50,9 @@ def parse_alerts():
 
     if "ALERT" in status:
       alerts += 1
-      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_type,time_stamp,time_stamp,entity)
+      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_class,time_stamp,time_stamp,entity)
       if metric_instance != "" : 
-        query += " AND %s = \'%s\'" % ( metric_instance,metric_value )
+        query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
       query = urllib.parse.quote(query)
       url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
       doc['url'] = url
@@ -63,7 +63,7 @@ def parse_alerts():
       fails += 1
         
 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_type,metric_value,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,time_stamp) )
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,time_stamp) )
 
     tests += 1
 
@@ -77,9 +77,9 @@ def escalate_alert(doc,url):
   logMsg(alert_history,doc)
   return
 
-def test_metric(entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold) :
+def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold) :
 
-  query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric_name,metric_type,entity,metric_value,metric_instance) 
+  query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric_name,metric_class,entity,metric_object,metric_instance) 
   value, time_stamp = influx.get_metric(influx_url,query)
   result = influx.test_metric(value,alert_operator,alert_threshold)
   time_stamp = time_stamp.replace("T"," ").replace("Z","")

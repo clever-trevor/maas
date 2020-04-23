@@ -74,7 +74,7 @@ Configure metric collection for a entity
 process=<I>process_name</I><BR>
 filesystem=<I>mount_point</I><BR>
 http=<I>url</I><BR>
-template=<I>pre-configure-component-template</I><BR>
+template=<I>pre-configured-component-template</I><BR>
   </TD>
  </TR>
  <TR>

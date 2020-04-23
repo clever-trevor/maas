@@ -65,15 +65,15 @@ if mode == "test" :
   print("<H2>Running tests in group <i>%s</i><h2>" % (alert_tag_in))
 
   # Build a table of each test executed to show at the end
-  monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
+  monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
 
   status = {}  # Dictionary used to store the overall monitors and status
   for r in records :
     r = r['_source']
     entity = r['entity']
-    metric_type = r['metric_type']
+    metric_class = r['metric_class']
+    metric_object = r['metric_object']
     metric_instance = r['metric_instance']
-    metric_value = r['metric_value']
     metric_name = r['metric_name']
     alert_operator = r['alert_operator']
     alert_threshold = r['alert_threshold']
@@ -81,9 +81,9 @@ if mode == "test" :
     alert_tag = r['alert_tag']
 
     # Run an Influx query for each metric
-    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE entity = '%s' " % ( metric_name, metric_type, entity )
+    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' " % ( metric_name, metric_class, entity )
     if metric_instance != "" :
-      query += " AND %s='%s'" % ( metric_instance, metric_value )
+      query += " AND %s='%s'" % ( metric_object, metric_instance)
     value, time_stamp = influx.get_metric(influx_url,query)
 
     # Test the result
@@ -112,7 +112,7 @@ if mode == "test" :
       result = "<FONT Color=Green>PASS</font>"
 
     # Add record to the monitors table
-    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold,str(value),str(result),time_stamp)
+    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,str(value),str(result),time_stamp)
 
   monitors += "</TABLE>"
 
@@ -137,21 +137,21 @@ if mode == "test" :
 # View Mode
 else :
   print("<h2>Viewing matches for alert_tag <i>%s</i></h2>" % ( alert_tag_in ))
-  print("<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Type<TH>Instance Name<TH>Instance Value<TH>Metric<TH>Operator<TH>Threshold</TR>")
+  print("<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Operator<TH>Threshold</TR>")
 
   # Loop through each record that was found
   for r in records :
     r = r['_source']
     entity = r['entity']
-    metric_type = r['metric_type']
+    metric_class = r['metric_class']
+    metric_object = r['metric_object']
     metric_instance = r['metric_instance']
-    metric_value = r['metric_value']
     metric_name = r['metric_name']
     alert_operator = r['alert_operator']
     alert_threshold = r['alert_threshold']
     support_team = r['support_team']
     alert_tag= r['alert_tag']
     # And print it
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_type,metric_instance,metric_value,metric_name,alert_operator,alert_threshold))
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold))
 
 print("</html>")
