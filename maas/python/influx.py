@@ -4,7 +4,7 @@ import json
 
 def get_metric(influx_url,query) :
   value = -1
-  time_stamp = ""
+  time_stamp = "NULL"
   try : 
     query = {"q":query}
     data = urllib.parse.urlencode(query).encode('ascii')
@@ -19,24 +19,4 @@ def get_metric(influx_url,query) :
   except:
     pass
   return value,time_stamp
-
-def test_metric(value,operator,threshold):
-  status = False
-  if operator == ">" :
-    if value > float(threshold) :
-      status = True
-  elif operator == ">=" :
-    if value >= float(threshold) :
-      status = True
-  elif operator == "<" :
-    if value < float(threshold) :
-      status = True
-  elif operator == "<=" :
-    if value <= float(threshold) :
-      status = True
-  elif operator == "=" :
-    if value == float(threshold) :
-      status = True
-
-  return status
 

@@ -1,7 +1,12 @@
 #!/usr/bin/python3
 
-lst = [{'a':1},{'b':2},{'c':3}]
+import json
 
+x = {'entity': 'influxdb', 'metric_class': 'cpu', 'metric_object': 'cpu', 'metric_instance': 'cpu-total', 'metric_name': 'usage_system', 'alert_operator': '<', 'alert_threshold': '1', 'support_team': 'EMS-SUPPORT', 'alert_tag': 'GMS-01', 'last_updated': '23/04/2020 13:47:46'}
 
-dct = { i:5 for i in lst }
-print(dct)
+print(x)
+js = "["
+js += json.dumps(x)
+js += "]"
+
+print(js)

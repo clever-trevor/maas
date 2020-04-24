@@ -5,12 +5,12 @@ from urllib.request import Request,urlopen
 import json
 import time
 import datetime
-import elasticsearch
 import configparser
-import influx
 
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
+
+api_url = maas['api']['url']
 
 def html_header():
   print("Content-Type:text/html;\n")
@@ -18,16 +18,37 @@ def html_header():
   print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Alert Evaluation</a></h1>")
   print("<hr>")
 
+def evaluate_metric(value,operator,threshold):
+  status = False
+  if operator == ">" :
+    if value > float(threshold) :
+      status = True
+  elif operator == ">=" :
+    if value >= float(threshold) :
+      status = True
+  elif operator == "<" :
+    if value < float(threshold) :
+      status = True
+  elif operator == "<=" :
+    if value <= float(threshold) :
+      status = True
+  elif operator == "=" :
+    if value == float(threshold) :
+      status = True
+
+  return status
+
 def parse_alerts():
   print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
-  x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
-  records = x['hits']
+
+  req = Request(api_url + "/config/alert",method='GET')
+  records = json.loads(json.load(urlopen(req)))
+
   tests = 0
   passes = 0
   alerts = 0
   fails = 0
   for r in records:
-    r = r['_source']
     entity = r['entity']
     metric_class = r['metric_class']
     metric_object = r['metric_object']
@@ -37,33 +58,36 @@ def parse_alerts():
     alert_threshold = r['alert_threshold']
     support_team = r['support_team']
 
-    doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team}
     if metric_class == "disk" and metric_instance == "path" and ":" in metric_object :
       metric_object = '\\\\' + metric_object
 
     # Now test this
-    status,actual,time_stamp = test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold)
+    status,actual,metric_timestamp = test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold)
     actual = "{:.2f}".format(actual)
-    doc['status'] = status + " Actual:" + str(actual) + " TimeStamp:" + (time_stamp)
 
-    logMsg(log_current,doc)
+    # Build a URL to link to the metric at time of measurement
+    query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_class,metric_timestamp,metric_timestamp,entity)
+    if metric_instance != "" : 
+      query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
+    query = urllib.parse.quote(query)
+    url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+
+    logMsg("current",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
 
     if "ALERT" in status:
       alerts += 1
-      query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_class,time_stamp,time_stamp,entity)
-      if metric_instance != "" : 
-        query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
-      query = urllib.parse.quote(query)
-      url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
-      doc['url'] = url
-      escalate_alert(doc,url)
+      escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
     elif "PASS" in status:
       passes += 1
     else :
       fails += 1
         
+    if status == "PASS" :
+      status = "<FONT COLOR=GREEN>%s</FONT>" % (status)
+    else:
+      status = "<FONT COLOR=RED>%s</FONT>" % (status)
 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,time_stamp) )
+    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp) )
 
     tests += 1
 
@@ -73,46 +97,53 @@ def parse_alerts():
 
   return tests
 
-def escalate_alert(doc,url):
-  logMsg(alert_history,doc)
+def escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url):
+  logMsg("history",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
   return
 
 def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold) :
 
-  query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric_name,metric_class,entity,metric_object,metric_instance) 
-  value, time_stamp = influx.get_metric(influx_url,query)
-  result = influx.test_metric(value,alert_operator,alert_threshold)
-  time_stamp = time_stamp.replace("T"," ").replace("Z","")
-  if time_stamp == "" : 
+  params = "entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s" % ( entity,metric_class,metric_object,metric_instance,metric_name)
+
+  req = Request(api_url + "/metric/last?" + params,method='GET')
+  value, metric_timestamp = str(urlopen(req).read(),'utf-8').split(' ')
+  try:
+    value = float(value)
+  except:
+    value = 0
+
+  result = evaluate_metric(value,alert_operator,alert_threshold)
+  metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
+  if metric_timestamp == "" : 
       status = "NODATARETURNED"
       value = 0
-      time_stamp = 0
+      metric_timestamp = 0
   elif result == True :
     status = "ALERT"
   else :
     status = "PASS"
 
-  return status,value,time_stamp
+  return status,value,metric_timestamp
 
-def logMsg(index,doc) :
-  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  doc['timestamp'] = now
-  elasticsearch.post_document(es,index,"_doc","",doc)
+def logMsg(index,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url) :
+  doc = { "log":index,"entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "status":status,"actual":actual,"metric_timestamp":metric_timestamp,"url":url }
+  data = str(json.dumps(doc)).encode("utf-8")
+
+  req = Request(api_url + "/log/alert",data=data)
+  req.add_header('Content-Type','application/json')
+  resp = str(urlopen(req).read(),'utf-8')
 
 def main():
   html_header()
   tests = parse_alerts()
   return tests
 
-log_current = "maas_alert_log_current"
-alert_history = "maas_alert_log_history"
-alert_config_index = "maas_config_alert"
-# Set Elasticsearch object
-es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-
 # Delete old records from the "current" log
-doc = { "query":{"match_all": {} } }
-x = elasticsearch.es_function(es,log_current,"_delete_by_query?conflicts=proceed",doc,"POST")
+doc = { "admin":"admin"}
+data = str(json.dumps(doc)).encode("utf-8")
+req = Request(api_url + "/admin/clear_current_alert_log",data=data)
+req.add_header('Content-Type','application/json')
+resp = str(urlopen(req).read(),'utf-8')
 
 influx_url = maas['influxdb']['url'] + "/query"
 start = time.process_time()
@@ -120,6 +151,6 @@ start = time.process_time()
 tests = str(main())
 
 time_taken = str(time.process_time() - start)
-doc = { "entity":"summary", "summary" : "Tests:" + tests + " Time Taken:" + time_taken}
-logMsg(log_current,doc)
+summary = "Tests:" + tests + " Time Taken:" + time_taken
+logMsg("current","summary","","","","","","","",summary,"","","")
 

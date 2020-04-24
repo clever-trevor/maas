@@ -34,13 +34,14 @@ def create_indices ():
   # Alert settings
   x = elasticsearch.create_index(es,"maas_config_alert",settings)
 
-  settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"}}}}
-
+  settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"},"metric_timestamp":{"type":"date","format":"yyyy/MM/dd HH:mm:ss"}}}}
   # Latest results from alert run
   x = elasticsearch.create_index(es,"maas_alert_log_current",settings)
   # History of all alerts generated
   x = elasticsearch.create_index(es,"maas_alert_log_history",settings)
+
   # Log of incoming configuration requests
+  settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"}}}}
   x = elasticsearch.create_index(es,"maas_agent_configure_log_history",settings)
   x = elasticsearch.show_indices(es)
   for a in x:

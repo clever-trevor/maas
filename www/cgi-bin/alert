@@ -2,24 +2,21 @@
 
 # This routing controls viewing and setting of alerting
 import cgi
-import glob
-import subprocess
 import os
-import elasticsearch
-import datetime
 import configparser
+from urllib.request import Request,urlopen
+import json
+
 
 maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
+
+api_url = maas['api']['url']
 
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Monitoring Alert Management</a></h1>")
 print("<hr>")
-
-es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-entity_config_index = "maas_config_entity_publish"
-alert_config_index = "maas_config_alert"
 
 # Pull in URL parameters
 fs = cgi.FieldStorage()
@@ -30,6 +27,7 @@ except:
 
 # Routine to print a Select block with a preselected option if a match found
 def print_select(id,name,options,match) :
+  print(str(type(options)))
   print("<select id='%s' name='%s'>" % (id,name))
   for option in options.split(",") :
     print("<option value='%s'" % ( option ))
@@ -55,17 +53,18 @@ if mode == "edit":
     except:
       alert_tag = ""
 
-    key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
-    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag }
+    data = str(json.dumps(doc)).encode("utf-8")
 
-    doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag, "last_updated":now }
-    # Open alert config
-    print("<h4><font color='Red'>** Alert Written to Database **</font></h4>")
-    key = key.replace("/","%2F")
-    x = elasticsearch.post_document(es,alert_config_index,"_doc",key,doc)
+    req = Request(api_url + "/config/alert",data=data)
+    req.add_header('Content-Type','application/json')
+    resp = str(urlopen(req).read(),'utf-8')
+    if resp == 'created' or resp == 'updated' :
+      print("<h3><font color='Green'>Alert was %s in Database</font></h3>" % (resp))
+      print("<h4><A HREF='/cgi-bin/alert?mode=view'>View all Alert Configuration</A></h4>")
+    else :
+      print("<h3><font color='Red'>** Alert Could not be written to Database (Result = %s) **</font></h3>" % (resp) )
 
-    # print link to config
-    print("<h2><A HREF='/cgi-bin/alert?mode=view'>View all Alert Configuration</A></h2>")
      
   # Either some detail was missing, or we want to go into form "edit" mode
   else :
@@ -119,14 +118,14 @@ if mode == "edit":
   <TD>
     """)
     # Build list of entities based on entitys that are currently configured
-    x = elasticsearch.run_search_uri(es,entity_config_index,"q=*&size=10000")['hits']
-    records = x['hits']
-    entities = ""
-    for record in records:
-      entities += record['_source']['entity'] + ","
-    entities = entities[:-1]
-    print_select("entity","entity",entities,entity)
-       
+    req = Request(api_url + "/entity",method='GET')
+    entities = json.loads(json.load(urlopen(req)))
+    entities = sorted(entities,key=lambda i: i['entity']) # Sort it
+    entity_list = ""
+    for e in entities:
+      entity_list += e['entity'] + ","
+    print_select("entity","entity",entity_list[:-1],entity)
+
     print("""
 
   </TD>
@@ -224,30 +223,32 @@ if mode == "edit":
 elif mode == "view":
   print("<h2>Alert Config View</h2>")
   # Alert configuration
-  x = elasticsearch.run_search_uri(es,alert_config_index,"q=*&size=10000")['hits']
-  alerts = x['hits']
+  try:
+    req = Request(api_url + "/config/alert",method='GET')
+    alerts = json.loads(json.load(urlopen(req)))
 
-  print("<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
+    print("<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
 
-  for r in alerts:
-    r = r['_source']
-    entity = r['entity']
-    metric_class = r['metric_class']
-    metric_object = r['metric_object']
-    metric_instance = r['metric_instance']
-    metric_name = r['metric_name']
-    alert_operator = r['alert_operator']
-    alert_threshold = r['alert_threshold']
-    support_team = r['support_team']
-    try :
-      alert_tag = r['alert_tag']
-    except:
-      alert_tag = ""
+    for r in alerts:
+      entity = r['entity']
+      metric_class = r['metric_class']
+      metric_object = r['metric_object']
+      metric_instance = r['metric_instance']
+      metric_name = r['metric_name']
+      alert_operator = r['alert_operator']
+      alert_threshold = r['alert_threshold']
+      support_team = r['support_team']
+      try :
+        alert_tag = r['alert_tag']
+      except:
+        alert_tag = ""
 
-    params = "&entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
-    url = "/cgi-bin/alert?" 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params))
-  print("</TABLE>")
+      params = "&entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
+      url = "/cgi-bin/alert?" 
+      print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params))
+    print("</TABLE>")
+  except:
+    print("<h3>Unable to get alert config</h3>")
   print("<h3><A HREF='/cgi-bin/alert?mode=edit'>Add New Alert</A></h3>")
 
 elif mode == "delete" :
@@ -256,21 +257,19 @@ elif mode == "delete" :
   metric_object = fs['metric_object'].value
   metric_instance = fs['metric_instance'].value
   metric_name = fs['metric_name'].value
-  alert_operator = fs['alert_operator'].value
-  alert_threshold = fs['alert_threshold'].value
-  support_team = fs['support_team'].value
-  try:
-    alert_tag = fs['alert_tag'].value
-  except:
-    alert_tag = ""
 
-  key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
-  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+  doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name} 
+  data = str(json.dumps(doc)).encode('utf-8')
 
-  # Open alert config
-  print("<h4><font color='Red'>** Alert Deleted from Database **</font></h4>")
-  key = key.replace("/","%2F")
-  x = elasticsearch.delete_document_by_id(es,alert_config_index,"_doc",key)
+  req = Request(api_url + "/config/alert",method='DELETE',data=data)
+  req.add_header('Content-Type','application/json')
+  resp = str(urlopen(req).read(),'utf-8')
+
+  if resp == "deleted":
+    print("<h4><font color='Green'>Alert config Deleted from Database</font></h4>")
+  else:
+    print("<h4><font color='Red'>** Alert was not deleted from Database (Response = %s)**</font></h4>" % (resp))
+
   print("<h3><A HREF='/cgi-bin/alert?mode=view'>View Alert Configuration</A></H3>")
 
 print("</html>")

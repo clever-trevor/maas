@@ -2,8 +2,8 @@
 
 # This routing controls viewing and running Groups of tests
 import cgi
-import elasticsearch
-import influx
+from urllib.request import Request,urlopen
+import json
 import datetime
 import configparser
 
@@ -12,10 +12,7 @@ maas = configparser.RawConfigParser()
 maas.read('/app/maas/conf/env')
 
 # Set some variables from this
-influx_url = maas['influxdb']['url'] + "/query"
-
-es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-entity_index = "maas_config_entity_publish"
+api_url = maas['api']['url']
 
 # REad in parameters passed to page
 fs = cgi.FieldStorage()
@@ -31,17 +28,20 @@ print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Agent Health</a
 print("<hr>")
 
 # Build Elastic query to return all records which match the supplied tag
-query = "q=entity:" + entities + "&_source_includes=entity"
-x = elasticsearch.run_search_uri(es,entity_index, query + "&size=10000")['hits']
 
-# If no results returned, then drop out
-if x['total'] == 0:
-  print("<h2>No entities found for <i>%s</i></h2>" % ( entities ))
+try:
+  req = Request(api_url + "/entity?entity=" + entities,method='GET')
+  records = json.loads(json.load(urlopen(req)))
+  records = sorted(records,key=lambda i: i['entity'])
+except:
+  print("<h3>Unable to get any nodes</h3>")
   exit()
 
-# Bring the records into a list and sort by entityname (nested dictionary)
-records = x['hits']
-records = sorted(records,key=lambda i: i['_source']['entity'])
+# If no results returned, then drop out
+#if x['total'] == 0:
+#  print("<h2>No entities found for <i>%s</i></h2>" % ( entities ))
+#  exit()
+
 
 # Test mode means to execute the tests
 print("<H2>Last Reboot Measurement for Hosts</h2>")
@@ -51,31 +51,43 @@ print("<TABLE class='blueTable'><TR><TH>Hostname<TH>Last Reboot<TH>Last Measurem
 
 status = {}  # Dictionary used to store the overall monitors and status
 for r in records :
-  r = r['_source']
   entity = r['entity']
   metric_class = "system"
   metric_name = "uptime"
 
   # Run an Influx query for each metric
-  query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' GROUP BY entity" % ( metric_name, metric_class, entity)
-  value, time_stamp = influx.get_metric(influx_url,query)
+  params = "entity=%s&metric_class=%s&metric_name=%s" % ( entity,metric_class,metric_name)
 
-  # Work out last reboot based on uptime
-  reboot = datetime.datetime.now() - datetime.timedelta(seconds=value)
-  reboot = reboot.strftime("%Y-%m-%d %H:%M:%S")
-
-  # Reformat the time stamp field
-  time_stamp = time_stamp.replace("T"," ").replace("Z","")
-  time_stamp = datetime.datetime.strptime(time_stamp,"%Y-%m-%d %H:%M:%S")
-  metric_age = datetime.datetime.utcnow() - time_stamp
-  metric_age = int(metric_age.total_seconds())
+  req = Request(api_url + "/metric/last?" + params,method='GET')
+  value, metric_timestamp = str(urlopen(req).read(),'utf-8').split(' ')
   color = "GREEN"
-  if metric_age > 120 :
-    color = "RED"
+  if metric_timestamp != "NA" :
+    try:
+      value = float(value)
+    except:
+      value = 0
 
-  print("<TR><TD>%s<TD>%s<TD><FONT COLOR='%s'><p title='%s seconds'>%s</p></FONT></TR>" % (entity,reboot,color,metric_age,time_stamp) )
+    # Work out last reboot based on uptime
+    reboot = datetime.datetime.utcnow() - datetime.timedelta(seconds=value)
+    reboot = reboot.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Reformat the time stamp field
+    metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
+    metric_timestamp = datetime.datetime.strptime(metric_timestamp,"%Y-%m-%d %H:%M:%S")
+    metric_age = datetime.datetime.utcnow() - metric_timestamp
+    metric_age = int(metric_age.total_seconds())
+    if metric_age > 120 :
+      color = "RED"
+  else:
+    value = 0
+    color = "RED"
+    reboot = "NA"
+    metric_age = "NA"
+
+  print("<TR><TD>%s<TD>%s<TD><FONT COLOR='%s'><p title='%s seconds'>%s</p></FONT></TR>" % (entity,reboot,color,metric_age,metric_timestamp) )
 
 
 print("</TABLE>")
+print("<h5>Note - Last Reboot time will vary if you constantly refresh the page.  This is because it is calculated by subtracting the last received metric of system uptime from 'now'</h5>")
 
 print("</html>")
