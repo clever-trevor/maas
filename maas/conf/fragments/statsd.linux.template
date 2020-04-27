@@ -1,0 +1,6 @@
+# statsd listener
+[[inputs.statsd]]
+  protocol = "udp"
+  service_address = "127.0.0.1:%PORT%"
+  metric_separator = "_"
+

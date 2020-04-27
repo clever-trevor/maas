@@ -4,8 +4,8 @@ import cgi
 import os
 import configparser
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
 print("Content-Type:text/html\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
@@ -18,7 +18,7 @@ if 'cmd' in fs :
   command = ""
   if cmd == "delete-metrics" :
     if 'host' in fs:
-      command = maas['influxdb']['binary'] + ' -database "telegraf" -execute "DROP SERIES WHERE host=\'%s\'"' % ( fs['host'].value)
+      command = maasconf['influxdb']['binary'] + ' -database "telegraf" -execute "DROP SERIES WHERE host=\'%s\'"' % ( fs['host'].value)
     else :
       quit()
 

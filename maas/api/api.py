@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #
 import flask
 from flask import request, jsonify
@@ -9,10 +10,11 @@ import socket
 import datetime
 import json
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
-es = { "url":maas['elastic']['url'], "user":maas['elastic']['user'], "pass":maas['elastic']['pass'] }
+
+es = { "url":maasconf['elastic']['url'], "user":maasconf['elastic']['user'], "pass":maasconf['elastic']['pass'] }
 # Index names
 config_entity_require = "maas_config_entity_require"
 config_entity_publish = "maas_config_entity_publish"
@@ -20,9 +22,10 @@ config_alert = "maas_config_alert"
 config_fragment = "maas_config_fragments"
 log_alert_current = "maas_alert_log_current"
 log_alert_history = "maas_alert_log_history"
+log_config = "maas_entity_log_config"
 
 
-influx_url = maas['influxdb']['url'] + "/query"
+influx_url = maasconf['influxdb']['url'] + "/query"
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -41,14 +44,15 @@ def home():
 #  /api/v1/entity           Return all entities which have connected at least once
 #  /api/v1/entity?entity=   Return only the entity specified in the query
 #   
-@app.route('/api/v1/entity', methods=['GET'])
+@app.route('/api/v1/entity', methods=['GET','POST'])
 def api_get_entities():
+  if request.method == "GET" :
     entity = "*"
     if 'entity' in request.args:
       entity = request.args['entity']
 
     try :
-      x = elasticsearch.run_search_uri(es,config_entity_publish,"q=entity:" + entity + "&size=10000&_source_includes=entity,platform,last_updated")['hits']
+      x = elasticsearch.run_search_uri(es,config_entity_publish,"entity:" + entity,"&size=10000&_source_includes=entity,platform,last_updated")['hits']
       records = x['hits']
       json_string = "["
       for record in records:
@@ -60,6 +64,26 @@ def api_get_entities():
       json_string = "{}"
 
     return jsonify(json_string)
+  elif request.method == "POST" :
+    data = request.get_json()
+    try:
+      entity = data['entity']
+    except:
+      return "entity is a mandatory field"
+    try:
+      content = data['content']
+    except:
+      return "content is a mandatory field"
+    try:
+      platform = data['platform']
+    except:
+      return "platform is a mandatory field"
+
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    doc = {"entity":entity,"content":content,"last_updated":now,"platform":platform}
+    x = elasticsearch.post_document(es,config_entity_publish,"_doc",entity,doc)['result']
+    return x
+
 
 
 ################################################################################
@@ -94,8 +118,8 @@ def api_get_config():
   
       # Collect the live config from the entity (Same as agent requests on startup)
       try:
-        response = urllib.request.urlopen(maas['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity)
-        config = response.read()
+        config = elasticsearch.run_search_uri(es,config_entity_publish,"entity.keyword:" + entity,"&size=10000")['hits']
+        config = config['hits'][0]['_source']['content']
       except:
         config = ""
       return config
@@ -107,7 +131,7 @@ def api_get_config():
         entity = "*"
       # Get the custom config from Elasticsearch
       try :
-        x = elasticsearch.run_search_uri(es,config_entity_require,"q=entity.keyword:" + entity + "&size=10000")['hits']
+        x = elasticsearch.run_search_uri(es,config_entity_require,"entity.keyword:" + entity,"&size=10000")['hits']
         records = x['hits']
 
         json_string = "["
@@ -143,8 +167,8 @@ def api_get_config():
     now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
     doc = {"entity":entity,"config":config,"platform":platform,"last_updated":now}
 
-    x = elasticsearch.post_document(es,config_entity_require,"_doc",entity,doc)
-    return "200"
+    x = elasticsearch.post_document(es,config_entity_require,"_doc",entity,doc)['result']
+    return x
 
 
 ################################################################################
@@ -160,11 +184,11 @@ def api_get_fragment():
     name = "*"
 
   try :
-    x = elasticsearch.run_search_uri(es,config_fragment,"q=_id:" + name + "&size=10000")['hits']
+    x = elasticsearch.run_search_uri(es,config_fragment,"_id:" + name, "&size=10000")['hits']
     records = x['hits']
     if name != "*" :
       try:
-        records = records[0]['_source']
+        records = records[0]['_source']['fragment']
       except:
         records = {}
   except :
@@ -173,7 +197,23 @@ def api_get_fragment():
   
 
 
-################################################################################A
+###############################################################################
+# Get a list of all tags found in the alerts config
+# GET
+#   /api/v1/config/alert/tags
+
+@app.route('/api/v1/config/alert/tags', methods=['GET'])
+def api_get_alert_tags():
+  query = {"size":0,"aggs":{"uniq_alert_tags":{"terms":{"field":"alert_tag.keyword"}}}}
+  x = elasticsearch.run_search(es,config_alert,query)['aggregations']['uniq_alert_tags']['buckets']
+  json_string =  "["
+  for alert_tag in x:
+    json_string += '{"tag":"%s"},' % ( alert_tag['key'] )
+  json_string = json_string[:-1] + "]"
+  return jsonify(json_string)
+
+
+###############################################################################
 # Alert config calls
 # GET
 #  /api/v1/config/alert          Return all alert configurations
@@ -187,17 +227,24 @@ def api_get_alert():
       entity = request.args['entity']
     except:
       entity = "*"
-
+    try:
+      alert_tag = "*" + request.args['alert_tag'] + "*"
+    except:
+      alert_tag = "*"
     try :
-      x = elasticsearch.run_search_uri(es,config_alert,"q=entity.keyword:" + entity + "&size=10000")['hits']
+      query = "entity.keyword:" + entity + " AND alert_tag:" + alert_tag 
+      x = elasticsearch.run_search_uri(es,config_alert,query,"&size=10000")['hits']
       records = x['hits']
       json_string = "["
+      x = 0
       for r in records:
-        json_string += json.dumps(r['_source'])+ ","
-      json_string = json_string[:-1] + "]"
+        x = x + 1
+        json_string += json.dumps(r['_source']) + ","
+      json_string = json_string[:-1] 
+      json_string += "]"
     except :
       json_string = "[]"
-  
+
     return jsonify(json_string)
  
   #---------------- POST ----------------------#
@@ -254,7 +301,6 @@ def api_get_alert():
   #---------------- DELETE ----------------------#
   elif request.method == 'DELETE' :
     data = request.get_json()
-
     try:
       entity = data['entity']
     except:
@@ -281,6 +327,7 @@ def api_get_alert():
       x = elasticsearch.delete_document_by_id(es,config_alert,"_doc",key)['result']
     except:
       x = "no valid key match"
+
     if x == "deleted":
       now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
 
@@ -340,23 +387,25 @@ def api_get_metric_last():
 #    app_id=
 @app.route('/api/v1/metric/post', methods=['POST'])
 def api_post_metric():
+  data = request.get_json()
+
   try:
-    entity = request.args['entity']
+    entity = data['entity']
   except:
     return("entity is a mandatory field")
 
   try:
-    app_id = request.args['app_id']
+    app_id = data['app_id']
   except:
     return("app_id is a mandatory field")
 
   try:
-    metric_name = request.args['metric_name']
+    metric_name = data['metric_name']
   except:
     return("metric_name is a mandatory field")
 
   try:
-    metric_value = request.args['metric_value']
+    metric_value = data['metric_value']
   except:
     return("metric_value is a mandatory field")
 
@@ -366,14 +415,12 @@ def api_post_metric():
 
   query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND entity='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
   query = urllib.parse.quote(query)
-  url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
-
+  url = maasconf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
   return str(url)
 
 # POST
-#  /api/v1/log/alert    Post a new metric
-#   log     DEtermines whether to write to current or history log
+#   /api/v1/admin/clear_current_alert_log  Removes all documents from index
 @app.route('/api/v1/admin/clear_current_alert_log', methods=['POST'])
 def api_clear_current_alert_log():
   data = request.get_json()
@@ -386,8 +433,30 @@ def api_clear_current_alert_log():
   return x
 
 # POST
+#  /api/v1/log/entity   Logs a message whenever a host connects
+#   
+@app.route('/api/v1/log/entity', methods=['POST'])
+def api_log_entity():
+  data = request.get_json()
+
+  try:
+    entity = data['entity']
+  except:
+    return("entity is a mandatory parameter")
+  try:
+    message = data['message']
+  except:
+    return("message is a mandatory parameter")
+  now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
+
+  doc = { "entity":entity, "message":message, "timestamp":now} 
+  x = elasticsearch.post_document(es,log_config,"_doc","",doc)
+  return x
+
+
+# POST
 #  /api/v1/log/alert    Post a new metric
-#   log     DEtermines whether to write to current or history log
+#   log     Determines whether to write to current or history log
 @app.route('/api/v1/log/alert', methods=['POST'])
 def api_log_alert():
   data = request.get_json()

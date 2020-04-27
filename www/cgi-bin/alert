@@ -8,10 +8,10 @@ from urllib.request import Request,urlopen
 import json
 
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
-api_url = maas['api']['url']
+api_url = maasconf['api']['url']
 
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
@@ -224,8 +224,9 @@ elif mode == "view":
   print("<h2>Alert Config View</h2>")
   # Alert configuration
   try:
-    req = Request(api_url + "/config/alert",method='GET')
+    req = Request(api_url + "/config/alert",method="GET")
     alerts = json.loads(json.load(urlopen(req)))
+    alerts = sorted(alerts,key=lambda i: i['entity'] )
 
     print("<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>")
 

@@ -6,15 +6,15 @@ import urllib.parse
 import configparser
 import json
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
 print("Content-Type:text/html;\n")
 print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
 print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Host Monitoring Configuration Management</a></h1>")
 print("<hr>")
 
-api_url = maas['api']['url']
+api_url = maasconf['api']['url']
 
 fs = cgi.FieldStorage()
 try:
@@ -40,9 +40,9 @@ if mode == "edit":
     req.add_header('Content-Type','application/json')
     resp = str(urlopen(req).read(),'utf-8')
    
-    if resp == "200" : 
+    if resp == "created" or resp == "updated" : 
       # Rebuild the configuration so that it is pulled at next startup
-      urllib.request.urlopen(maas['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity + "&reset=true")
+      urllib.request.urlopen(maasconf['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity + "&reset=true")
       print("<h2>Config written, view <A HREF='/cgi-bin/collect?mode=view&entity=" + entity + "'>here</A></h2>")
       print("<h5>Agent needes to be retarted to pick up new config</h5>")
       print("<h3>Click <A HREF='/cgi-bin/telegraf-configure?host=" + entity + "'>here</A> to see Telgraf config</h3>")
@@ -105,11 +105,12 @@ template=<I>pre-configured-component-template</I><BR>
     print("<TABLE class='blueTable'><TR><TH>Host<TH>Action</TR>")
     try : 
       req = Request(api_url + "/entity",method='GET')
-      records = json.load(urlopen(req))
+      all_entities = json.loads(json.load(urlopen(req)))
+      records = sorted(all_entities,key=lambda i: i['entity'] )
     except :
       records = {}
     for r in records:
-      entity = r['_source']['entity'] 
+      entity = r['entity'] 
       print("<TR><TD>" + entity + "<TD><A HREF='/cgi-bin/collect?entity=" + entity + "&mode=edit'>Edit Config</A></TR>")
     print("</TABLE>")
 

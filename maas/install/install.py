@@ -9,8 +9,8 @@ import elasticsearch
 import configparser
 import time
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
 def delete_indices ():
   x = elasticsearch.delete_index(es,"maas_config_fragments")
@@ -19,7 +19,7 @@ def delete_indices ():
   x = elasticsearch.delete_index(es,"maas_config_alert")
   x = elasticsearch.delete_index(es,"maas_alert_log_current")
   x = elasticsearch.delete_index(es,"maas_alert_log_history")
-  x = elasticsearch.delete_index(es,"maas_agent_configure_log_history")
+  x = elasticsearch.delete_index(es,"maas_entity_log_config")
 
 def create_indices ():
   settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 } }
@@ -42,21 +42,20 @@ def create_indices ():
 
   # Log of incoming configuration requests
   settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"}}}}
-  x = elasticsearch.create_index(es,"maas_agent_configure_log_history",settings)
+  x = elasticsearch.create_index(es,"maas_entity_log_config",settings)
   x = elasticsearch.show_indices(es)
   for a in x:
     print(a.decode("UTF-8").rstrip())
 
 def create_symlinks():
-  os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
-  
+  # Set up symlinks for influx.py module
   os.popen("ln -s /app/maas/python/influx.py        /app/maas/api/influx.py")
+
+  # Set up symlinks for elasticsearch.py module
+  os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
   os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/api/elasticsearch.py")
 
-  os.popen("ln -s /app/maas/python/elasticsearch.py /app/www/cgi-bin/elasticsearch.py")
-  os.popen("ln -s /app/maas/python/influx.py        /app/www/cgi-bin/influx.py")
- 
-es = { "url" : maas['elastic']['url'], "user" : maas['elastic']['user'], "pass" : maas['elastic']['pass'] }
+es = { "url" : maasconf['elastic']['url'], "user" : maasconf['elastic']['user'], "pass" : maasconf['elastic']['pass'] }
 
 #delete_indices()
 time.sleep(2)

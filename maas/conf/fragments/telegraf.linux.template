@@ -41,11 +41,6 @@
 [[inputs.net]]
   ignore_protocol_stats = true
 
-[[inputs.statsd]]
-  protocol = "udp"
-  service_address = "127.0.0.1:9125"
-  metric_separator = "_"
-
 [[inputs.disk]]
   mount_points = ["/","/boot","/home","/opt","/tmp","/usr","/var","/var/crash"]
 

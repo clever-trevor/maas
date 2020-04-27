@@ -1,3 +1,4 @@
+import urllib.parse
 from urllib.request import Request,urlopen
 import json
 import base64
@@ -75,12 +76,13 @@ def delete_document_by_id(es,index,type,id) :
     resp = {}
   return resp
 
-def run_search_uri(es,index,query) :
+def run_search_uri(es,index,query,params) :
   try :
-    url = es['url'] + "/" + index + "/_search?" + query
-    headers = { "Content-Type":"application/json" }
-    req = Request(url,headers=headers)
+    query = urllib.parse.quote(query)
+    url = es['url'] + "/" + index + "/_search?q=" + query + params
+    req = Request(url)
     req.add_header("Authorization","Basic %s" % add_creds(es))
+    req.add_header("Content-Type","application/json")
     resp = json.load(urlopen(req))
   except :
     resp = {}

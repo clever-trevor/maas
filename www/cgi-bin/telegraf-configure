@@ -10,20 +10,16 @@
 import cgi
 import datetime
 import os
-import elasticsearch
 import configparser
+import json
+from urllib.request import Request,urlopen
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
+
+api_url = maasconf['api']['url']
 
 print("Content-Type:text/plain\n")
-
-es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-
-fragment_index = "maas_config_fragments"
-entity_config_index_in = "maas_config_entity_require"
-entity_config_index_out = "maas_config_entity_publish"
-config_log = "maas_agent_configure_log_history"
 
 message = ""
 fs = cgi.FieldStorage()
@@ -38,9 +34,9 @@ if 'host' in fs:
   # If config already exists then load it
   content = ""
   try:
-    doc = elasticsearch.get_document_by_id(es,entity_config_index_out,"_doc",entity)['_source']
-    content = doc['content']
-    platform = doc['platform']
+    req = Request(api_url + "/config/entity?entity=" + entity + "&mode=live")
+    content = str(urlopen(req).read(),'utf-8')
+
     message += " Config already exists"
   except:
     pass
@@ -59,13 +55,16 @@ if 'host' in fs:
 
     # Get the base config for this host
     # "content" will be built up based on information in incoming request
-    entity_frag = elasticsearch.get_document_by_id(es,fragment_index,"_doc",template)['_source']['fragment']
+    req =  Request(api_url + "/config/fragment?name=" + template)
+    entity_frag = json.load(urlopen(req))
     content = entity_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",entity)
-    content = content.replace("%INFLUXDB%",maas['influxdb']['url'])
+    content = content.replace("%INFLUXDB%",maasconf['influxdb']['url'])
 
     try : 
-      entity_config_in = elasticsearch.get_document_by_id(es,entity_config_index_in,"_doc",entity)['_source']['config']
-      collect = entity_config_in.replace("\\n","\n").replace("\\\"","\"").split()
+      req =  Request(api_url + "/config/entity?entity=" + entity + "&mode=custom")
+      resp = json.loads(json.load(urlopen(req)),strict=False)
+      resp = resp[0]['config']
+      collect = resp.replace("\\n","\n").replace("\\\"","\"").split()
     except:
       collect = ""
 
@@ -76,22 +75,32 @@ if 'host' in fs:
         # Process monitor. 
         if monitor_type == "process" :
           fragment = "procstat." + platform + ".template"
-          x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
+          req =  Request(api_url + "/config/fragment?name=" + fragment)
+          x = json.load(urlopen(req))
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%PROCESS%",instance)
         # Filesystem monitor
         elif monitor_type == "filesystem":
           fragment = "disk." + platform + ".template"
-          x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
+          req =  Request(api_url + "/config/fragment?name=" + fragment)
+          x = json.load(urlopen(req))
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%FILESYSTEM%",instance)
         # URL monitor
         elif monitor_type == "http":
           fragment = "http.template"
-          x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
+          req =  Request(api_url + "/config/fragment?name=" + fragment)
+          x = json.load(urlopen(req))
           x = x.replace("\\n","\n").replace("\\\"","\"").replace("%URL%",instance)
+        # statsd listener
+        elif monitor_type == "statsd":
+          fragment = "statsd." + platform + ".template"
+          req =  Request(api_url + "/config/fragment?name=" + fragment)
+          x = json.load(urlopen(req))
+          x = x.replace("\\n","\n").replace("\\\"","\"").replace("%PORT%",instance)
         # Pre-populated template
         elif monitor_type == "template":
           fragment = "template." + instance + "." + platform + ".template"
-          x = elasticsearch.get_document_by_id(es,fragment_index,"_doc",fragment)['_source']['fragment']
+          req =  Request(api_url + "/config/fragment?name=" + fragment)
+          x = json.load(urlopen(req))
           x = x.replace("\\n","\n").replace("\\\"","\"")
 
         # Add the processed fragment
@@ -103,15 +112,20 @@ if 'host' in fs:
     
     message += " New config generated"
   print(content)
-  now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  doc = {"entity":entity,"content":content,"last_updated":now,"platform":platform}
-  x = elasticsearch.post_document(es,entity_config_index_out,"_doc",entity,doc)
+
+  doc = {"entity":entity,"content":content,"platform":platform}
+  data = str(json.dumps(doc)).encode('utf-8')
+  req = Request(api_url + "/entity",data=data,method="POST")
+  req.add_header('Content-Type','application/json')
+  resp = str(urlopen(req).read(),'utf-8')
 
 else:
   message += " No hostname supplied"
 
 
-now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-doc = {"entity":entity,"message":message,"timestamp":now}
-elasticsearch.post_document(es,config_log,"_doc","",doc)
+doc = {"entity":entity,"message":message}
+data = str(json.dumps(doc)).encode('utf-8')
+req = Request(api_url + "/log/entity",data=data,method="POST")
+req.add_header('Content-Type','application/json')
+resp = urlopen(req).read()
 

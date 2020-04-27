@@ -8,11 +8,11 @@ import datetime
 import configparser
 
 # Read in the config for this entity
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
 # Set some variables from this
-api_url = maas['api']['url']
+api_url = maasconf['api']['url']
 
 # REad in parameters passed to page
 fs = cgi.FieldStorage()

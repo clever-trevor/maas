@@ -1,21 +1,19 @@
 #!/usr/bin/python3
 
 # This routing controls viewing and running Groups of tests
+from urllib.request import Request,urlopen
 import cgi
-import elasticsearch
-import influx
+import maas
 import datetime
 import configparser
+import json
 
 # Read in the config for this entity
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
 # Set some variables from this
-influx_url = maas['influxdb']['url'] + "/query"
-
-es = { "url": maas['elastic']['url'] ,"user": maas['elastic']['user'],"pass": maas['elastic']['pass'] }
-alert_config_index = "maas_config_alert"
+api_url = maasconf['api']['url']
 
 # REad in parameters passed to page
 fs = cgi.FieldStorage()
@@ -36,28 +34,29 @@ if 'alert_tag' in fs :
 else:
   print("<H3>You need to pass in a parameter called <b>alert_tag</b></H3>")
   print("<H4>Available alert_tags below</H4>")
-  query = {"size":0,"aggs":{"uniq_alert_tags":{"terms":{"field":"alert_tag.keyword"}}}}
-  x = elasticsearch.run_search(es,alert_config_index,query)['aggregations']['uniq_alert_tags']['buckets']
-  print("<TABLE class='blueTable'><TR><TH>Tag</TR>")
-  for alert_tag in x :
+  print("<TABLE class='blueTable'><TR><TH>Tag</TH></TR>")
+   
+  # Retrieve all tags from alert configs but only show each once 
+  req = Request(api_url + "/config/alert/tags",method='GET')
+  tags = json.loads(json.load(urlopen(req)))
+  tagfound = {}
+  for alert_tag in tags :
     print("<TR><TD>")
-    myalert_tags = alert_tag['key'].split()
+    myalert_tags = alert_tag['tag'].split()
     for myalert_tag in myalert_tags:
-      print("<A HREF='/cgi-bin/alert-groups?alert_tag=%s'>%s</A>" % ( myalert_tag,myalert_tag))
+      if myalert_tag not in tagfound :
+        print("<A HREF='/cgi-bin/alert-groups?alert_tag=%s'>%s</A>" % ( myalert_tag,myalert_tag))
+      tagfound[myalert_tag] = True
     print("</TD></TR>")
   print("</TABLE>")
   exit()
 
 # Build Elastic query to return all records which match the supplied alert_tag
-query = "q=alert_tag.keyword:*" + alert_tag_in + "*"
-x = elasticsearch.run_search_uri(es,alert_config_index, query + "&size=10000")['hits']
-# If no results returned, then drop out
-if x['total'] == 0:
-  print("<h2>No tests found for Tag <i>%s</i></h2>" % ( alert_tag_in ))
-  exit()
+req = Request(api_url + "/config/alert?alert_tag=" + alert_tag_in,method='GET')
+tags = json.loads(json.load(urlopen(req)))
 
-# Bring the records into a list
-records = x['hits']
+# Bring the records into a lis
+records = tags
 
 # Test mode means to execute the tests
 if mode == "test" :
@@ -69,7 +68,6 @@ if mode == "test" :
 
   status = {}  # Dictionary used to store the overall monitors and status
   for r in records :
-    r = r['_source']
     entity = r['entity']
     metric_class = r['metric_class']
     metric_object = r['metric_object']
@@ -81,15 +79,19 @@ if mode == "test" :
     alert_tag = r['alert_tag']
 
     # Run an Influx query for each metric
-    query = "SELECT last(%s) FROM telegraf.autogen.%s WHERE host = '%s' " % ( metric_name, metric_class, entity )
-    if metric_instance != "" :
-      query += " AND %s='%s'" % ( metric_object, metric_instance)
-    value, time_stamp = influx.get_metric(influx_url,query)
+    params = "entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s" % ( entity,metric_class,metric_object,metric_instance,metric_name)
+
+    req = Request(api_url + "/metric/last?" + params,method='GET')
+    value, metric_timestamp = str(urlopen(req).read(),'utf-8').split(' ')
+    try:
+      value = float(value)
+    except:
+      value = 0
 
     # Test the result
-    result = influx.test_metric(value,alert_operator,alert_threshold)
+    result = maas.evaluate_metric(value,alert_operator,alert_threshold)
     # Reformat the time stamp field
-    time_stamp = time_stamp.replace("T"," ").replace("Z"," ")
+    metric_timestamp = metric_timestamp.replace("T"," ").replace("Z"," ")
 
     # If first record, then create an initial dictionary entry with some defaults
     if alert_tag_in not in status :
@@ -112,7 +114,8 @@ if mode == "test" :
       result = "<FONT Color=Green>PASS</font>"
 
     # Add record to the monitors table
-    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,str(value),str(result),time_stamp)
+    value = "{:.2f}".format(value)
+    monitors += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,str(value),str(result),metric_timestamp)
 
   monitors += "</TABLE>"
 
@@ -141,7 +144,6 @@ else :
 
   # Loop through each record that was found
   for r in records :
-    r = r['_source']
     entity = r['entity']
     metric_class = r['metric_class']
     metric_object = r['metric_object']

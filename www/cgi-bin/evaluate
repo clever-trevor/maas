@@ -2,41 +2,22 @@
 
 import urllib.parse
 from urllib.request import Request,urlopen
+import maas
 import json
 import time
 import datetime
 import configparser
 
-maas = configparser.RawConfigParser()
-maas.read('/app/maas/conf/env')
+maasconf = configparser.RawConfigParser()
+maasconf.read('/app/maas/conf/env')
 
-api_url = maas['api']['url']
+api_url = maasconf['api']['url']
 
 def html_header():
   print("Content-Type:text/html;\n")
   print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
   print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Alert Evaluation</a></h1>")
   print("<hr>")
-
-def evaluate_metric(value,operator,threshold):
-  status = False
-  if operator == ">" :
-    if value > float(threshold) :
-      status = True
-  elif operator == ">=" :
-    if value >= float(threshold) :
-      status = True
-  elif operator == "<" :
-    if value < float(threshold) :
-      status = True
-  elif operator == "<=" :
-    if value <= float(threshold) :
-      status = True
-  elif operator == "=" :
-    if value == float(threshold) :
-      status = True
-
-  return status
 
 def parse_alerts():
   print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
@@ -70,7 +51,7 @@ def parse_alerts():
     if metric_instance != "" : 
       query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
     query = urllib.parse.quote(query)
-    url = maas['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+    url = maasconf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
     logMsg("current",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
 
@@ -102,7 +83,6 @@ def escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name
   return
 
 def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold) :
-
   params = "entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s" % ( entity,metric_class,metric_object,metric_instance,metric_name)
 
   req = Request(api_url + "/metric/last?" + params,method='GET')
@@ -112,7 +92,7 @@ def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,al
   except:
     value = 0
 
-  result = evaluate_metric(value,alert_operator,alert_threshold)
+  result = maas.evaluate_metric(value,alert_operator,alert_threshold)
   metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
   if metric_timestamp == "" : 
       status = "NODATARETURNED"
@@ -145,7 +125,6 @@ req = Request(api_url + "/admin/clear_current_alert_log",data=data)
 req.add_header('Content-Type','application/json')
 resp = str(urlopen(req).read(),'utf-8')
 
-influx_url = maas['influxdb']['url'] + "/query"
 start = time.process_time()
 
 tests = str(main())
