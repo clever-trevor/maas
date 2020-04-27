@@ -119,10 +119,11 @@ def api_get_config():
       # Collect the live config from the entity (Same as agent requests on startup)
       try:
         config = elasticsearch.run_search_uri(es,config_entity_publish,"entity.keyword:" + entity,"&size=10000")['hits']
-        config = config['hits'][0]['_source']['content']
+        config = config['hits'][0]['_source']
       except:
         config = ""
-      return config
+      return jsonify(config)
+
     # Custom configuration only
     else:
       try:
@@ -143,7 +144,6 @@ def api_get_config():
 
       except :
         json_string = "{}"
-
     return jsonify(json_string)
 
   ################### POST NEW CUSTOM CONFIG #########################
@@ -411,7 +411,7 @@ def api_post_metric():
 
   string = "statsd,app_id=%s,host=%s,metric_name=%s:%s|c" % (app_id,entity,metric_name,metric_value)
   sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-  sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9125))
+  sock.sendto(bytes(string,"utf-8"), ("127.0.0.1",9500))
 
   query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND entity='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
   query = urllib.parse.quote(query)
@@ -431,6 +431,30 @@ def api_clear_current_alert_log():
   doc = { "query":{"match_all": {} } }
   x = elasticsearch.es_function(es,log_alert_current,"_delete_by_query?conflicts=proceed",doc,"POST")
   return x
+
+# POST
+#   /api/v1/admin/clear_current_alert_log  Removes all documents from index
+@app.route('/api/v1/admin/delete_entity', methods=['POST'])
+def api_delete_entity():
+  data = request.get_json()
+  try:
+    admin = data['admin']
+  except:
+    return "unable to process"
+  try : 
+    entity = data['entity']
+  except :
+    return "no entity passed"
+
+  doc = { "query":{"match": {"entity":entity } } }
+  results = ""
+  x = elasticsearch.es_function(es,config_entity_require,"_delete_by_query?conflicts=proceed",doc,"POST")
+  results = "entity-require:" + str(x) + "<BR>"
+  x = elasticsearch.es_function(es,config_entity_publish,"_delete_by_query?conflicts=proceed",doc,"POST")
+  results += "entity-publish:" + str(x) + "<BR>"
+  x = elasticsearch.es_function(es,config_alert,"_delete_by_query?conflicts=proceed",doc,"POST")
+  results += "config-alert-publish:" + str(x) + "<BR>"
+  return results
 
 # POST
 #  /api/v1/log/entity   Logs a message whenever a host connects

@@ -35,8 +35,9 @@ if 'host' in fs:
   content = ""
   try:
     req = Request(api_url + "/config/entity?entity=" + entity + "&mode=live")
-    content = str(urlopen(req).read(),'utf-8')
-
+    resp = json.load(urlopen(req))
+    content = resp['content']
+    platform = resp['platform']
     message += " Config already exists"
   except:
     pass

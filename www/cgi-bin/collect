@@ -42,7 +42,7 @@ if mode == "edit":
    
     if resp == "created" or resp == "updated" : 
       # Rebuild the configuration so that it is pulled at next startup
-      urllib.request.urlopen(maasconf['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity + "&reset=true")
+      urllib.request.urlopen(maasconf['maas']['url'] + "/cgi-bin/telegraf-configure?host=" + entity + "&os=" + platform + "&reset=true")
       print("<h2>Config written, view <A HREF='/cgi-bin/collect?mode=view&entity=" + entity + "'>here</A></h2>")
       print("<h5>Agent needes to be retarted to pick up new config</h5>")
       print("<h3>Click <A HREF='/cgi-bin/telegraf-configure?host=" + entity + "'>here</A> to see Telgraf config</h3>")
