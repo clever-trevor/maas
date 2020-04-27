@@ -35,8 +35,8 @@ if 'cmd' in fs :
   command = ""
 
   if cmd == "delete-metrics" :
-    if 'host' in fs:
-      command = maasconf['influxdb']['binary'] + ' -database "telegraf" -execute "DROP SERIES WHERE host=\'%s\'"' % ( fs['host'].value)
+    if 'entity' in fs:
+      command = maasconf['influxdb']['binary'] + ' -database "telegraf" -execute "DROP SERIES WHERE host=\'%s\'"' % ( fs['entity'].value)
       run_cmd(command)
 
   elif cmd == "delete-entity" :

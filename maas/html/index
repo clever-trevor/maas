@@ -24,7 +24,7 @@
     <h4><a href="%KIBANA%">View Alert History</a></h4>
     <h4><a href="/cgi-bin/alert?mode=view">View Alert Configuration</a></h4>
     <h4><a href="/cgi-bin/alert?mode=edit">Edit Alert Configuration</a></h4>
-    <h4><a href="/cgi-bin/alert-groups?alert_tag=TEST">Alert Grouping Management</a></h4>
+    <h4><a href="/cgi-bin/alert-groups">Alert Grouping Management</a></h4>
   </TD>
   <TD>
     <h2>Testing</h2>
