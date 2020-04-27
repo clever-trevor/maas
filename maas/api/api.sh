@@ -1,3 +1,3 @@
 cd /app/maas/api
-python3 api.py
+nohup python3 /app/maas/api/api.py > /dev/null 2>&1 &
 
