@@ -5,12 +5,14 @@ import os
 import glob
 import datetime
 import json
-import elasticsearch
-import configparser
 import time
 
-maasconf = configparser.RawConfigParser()
-maasconf.read('/app/maas/conf/env')
+import sys
+sys.path.append("../api")
+import elasticsearch
+sys.path.append("../www/scripts")
+import maas_conf
+
 
 def delete_indices ():
   x = elasticsearch.delete_index(es,"maas_config_fragments")
@@ -47,17 +49,8 @@ def create_indices ():
   for a in x:
     print(a.decode("UTF-8").rstrip())
 
-def create_symlinks():
-  # Set up symlinks for influx.py module
-  os.popen("ln -s /app/maas/python/influx.py        /app/maas/api/influx.py")
-
-  # Set up symlinks for elasticsearch.py module
-  os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/install/elasticsearch.py")
-  os.popen("ln -s /app/maas/python/elasticsearch.py /app/maas/api/elasticsearch.py")
-
-es = { "url" : maasconf['elastic']['url'], "user" : maasconf['elastic']['user'], "pass" : maasconf['elastic']['pass'] }
+es = { "url" : maas_conf.conf['elastic']['url'], "user" : maas_conf.conf['elastic']['user'], "pass" : maas_conf.conf['elastic']['pass'] }
 
 #delete_indices()
 time.sleep(2)
 create_indices()
-create_symlinks()
