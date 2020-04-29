@@ -5,7 +5,7 @@ It uses (or rather relies on) :<BR>
 <LI>Chronograf - Visualisation
 <LI>Telegraf - Agents for metric collection
 <LI>Elasticsearch - Used to store telegraf configs, alert definitions, logs, etc.
-<LI>Apache HTTPD - Serves up web pages and acts as configuration point for Telegraf
+<LI>Python - Standard Python3 package but with Flask installed
   <BR>
 <BR>
 The features are as<BR> follows :<BR>
