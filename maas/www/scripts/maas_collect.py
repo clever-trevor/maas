@@ -37,7 +37,9 @@ def collect(args,form):
    
       if resp == "created" or resp == "updated" : 
         # Rebuild the configuration so that it is pulled at next startup
+        print(maas_conf.conf['www']['url'] + "/telegraf-configure?host=" + entity + "&os=" + platform + "&reset=true")
         urllib.request.urlopen(maas_conf.conf['www']['url'] + "/telegraf-configure?host=" + entity + "&os=" + platform + "&reset=true")
+        print("HI")
         content += "<h2>Config written, view <A HREF='/collect?mode=view&entity=" + entity + "'>here</A></h2>"
         content += "<h5>Agent needes to be retarted to pick up new config</h5>"
         content += "<h3>Click <A HREF='/telegraf-configure?host=" + entity + "'>here</A> to see Telgraf config</h3>"

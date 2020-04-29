@@ -72,11 +72,10 @@ def post_metric():
   content = maas_post_metric.post_metric(form)
   return content
 
-@app.route('/telegraf-configure', methods=['GET','POST'])
+@app.route('/telegraf-configure', methods=['GET'])
 def telegraf_configure():
   args = request.args
-  form = request.form
-  content = maas_telegraf_configure.configure(args,form)
+  content = maas_telegraf_configure.configure(args)
   return content
 
 # Start the app and listen on all interfaces, port 9000
