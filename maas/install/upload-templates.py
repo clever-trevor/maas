@@ -5,6 +5,8 @@ import os
 import glob
 import datetime
 import json
+import sys
+sys.path.append("../api")
 import elasticsearch
 import configparser
 import time
