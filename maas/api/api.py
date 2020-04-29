@@ -4,18 +4,17 @@ import flask
 from flask import request, jsonify
 import elasticsearch
 import influx
-import configparser
 import urllib.request
 import socket
 import datetime
 import json
 
-# Maas configuration variables
-maasconf = configparser.RawConfigParser()
-maasconf.read('/app/maas/conf/env')
+import sys
+sys.path.append("../www/scripts")
+import maas_conf
 
 # Elasticsearch object
-es = { "url":maasconf['elastic']['url'], "user":maasconf['elastic']['user'], "pass":maasconf['elastic']['pass'] }
+es = { "url":maas_conf.conf['elastic']['url'], "user":maas_conf.conf['elastic']['user'], "pass":maas_conf.conf['elastic']['pass'] }
 
 # Index names
 config_entity_require = "maas_config_entity_require"
@@ -27,7 +26,7 @@ log_alert_history = "maas_alert_log_history"
 log_config = "maas_entity_log_config"
 
 # Influx API
-influx_url = maasconf['influxdb']['url'] + "/query"
+influx_url = maas_conf.conf['influxdb']['url'] + "/query"
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -443,7 +442,7 @@ def api_post_metric():
   # Build a URL which the user would be able to jump to see the data
   query = "SELECT mean(value) FROM telegraf.autogen.statsd WHERE time > now() - 1h AND app_id = '%s' AND entity='%s' AND metric_name = '%s' GROUP BY time(:interval:) FILL(null)" % ( app_id,entity,metric_name)
   query = urllib.parse.quote(query)
-  url = maasconf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+  url = maas_conf.conf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
   return str(url)
 

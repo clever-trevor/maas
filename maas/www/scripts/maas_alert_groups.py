@@ -30,17 +30,16 @@ def alert_groups(args):
     try:
       req = Request(api_url + "/config/alert/tags",method='GET')
       tags = json.loads(json.load(urlopen(req)))
+      tags = sorted(tags,key=lambda i: i['tag'])
       tagfound = {}
       for alert_tag in tags :
-        content += "<TR><TD>"
         myalert_tags = alert_tag['tag'].split()
         for myalert_tag in myalert_tags:
           if myalert_tag not in tagfound :
-            content += "<A HREF='/alert-groups?alert_tag=%s'>%s</A>" % ( myalert_tag,myalert_tag)
+            content += "<TR><TD><A HREF='/alert-groups?alert_tag=%s'>%s</A></TD></TR>" % ( myalert_tag,myalert_tag)
           tagfound[myalert_tag] = True
-        content += "</TD></TR>"
       content += "</TABLE>"
-      exit()
+      return content
     except:
       content += "Error connecting to /config/alert/tags API"
       return content
@@ -49,12 +48,11 @@ def alert_groups(args):
   try:
     req = Request(api_url + "/config/alert?alert_tag=" + alert_tag_in,method='GET')
     tags = json.loads(json.load(urlopen(req)))
+    records = sorted(tags,key=lambda i: i['entity'] )
   except:
     content += "Unable to connect to /config/alert API"
     return content
 
-  # Bring the records into a lis
-  records = tags
 
   # Test mode means to execute the tests
   if mode == "test" :
@@ -87,7 +85,7 @@ def alert_groups(args):
         value = 0
 
       # Test the result
-      result = maas.evaluate_metric(value,alert_operator,alert_threshold)
+      result = maas_utils.evaluate_metric(value,alert_operator,alert_threshold)
       # Reformat the time stamp field
       metric_timestamp = metric_timestamp.replace("T"," ").replace("Z"," ")
 

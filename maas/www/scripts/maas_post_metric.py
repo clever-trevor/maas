@@ -5,11 +5,9 @@ import json
 import maas_conf
 
 
-def post_metric(args,form):
+def post_metric(form):
   api_url = maas_conf.conf['api']['url']
 
-  print(args)
-  print(form)
   content = "<html><head><link rel='stylesheet' type='text/css' href='/static/dark.css'></head>"
   content += "<h1><A style='text-decoration:none' HREF='/'>Generate Test Metrics</a></h1>"
   content += "<hr>"
@@ -19,8 +17,8 @@ def post_metric(args,form):
       app_id = form['app_id']
       entity = form['entity']
       metric_name = form['metric_name']
-      metric = form['metric']
-      doc = { "entity":entity, "metric_name":metric_name, "metric":metric,"app_id":app_id }
+      metric_value = form['metric']
+      doc = { "entity":entity, "metric_name":metric_name, "metric_value":metric_value,"app_id":app_id }
       data = str(json.dumps(doc)).encode("utf-8")
       req = Request(api_url + "/metric/post",data=data)
       req.add_header('Content-Type','application/json')

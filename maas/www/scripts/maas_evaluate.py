@@ -6,6 +6,7 @@ import json
 import time
 import datetime
 import maas_conf
+import maas_utils
 
 api_url = maas_conf.conf['api']['url']
 
@@ -22,6 +23,7 @@ def parse_alerts():
 
   req = Request(api_url + "/config/alert",method='GET')
   records = json.loads(json.load(urlopen(req)))
+  records = sorted(records,key=lambda i: i['entity'])
 
   tests = 0
   passes = 0
@@ -90,7 +92,7 @@ def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,al
   except:
     value = 0
 
-  result = maas.evaluate_metric(value,alert_operator,alert_threshold)
+  result = maas_utils.evaluate_metric(value,alert_operator,alert_threshold)
   metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
   if metric_timestamp == "" : 
       status = "NODATARETURNED"

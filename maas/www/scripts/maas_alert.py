@@ -46,60 +46,62 @@ def alert(args,form):
         alert_tag = form['alert_tag']
       except:
         alert_tag = ""
+      if entity == "" or metric_class == "" or metric_object == "" or metric_instance == "" or metric_name == "" or alert_operator == "" or alert_threshold == "" or support_team == "" :
+        content += "<h3>One or more parameters were missing - please press back on browser to correct"
+      else :
 
-      doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag }
-      data = str(json.dumps(doc)).encode("utf-8")
+        doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag }
+        data = str(json.dumps(doc)).encode("utf-8")
 
-      try : 
-        req = Request(api_url + "/config/alert",data=data)
-        req.add_header('Content-Type','application/json')
-        resp = str(urlopen(req).read(),'utf-8')
-        if resp == 'created' or resp == 'updated' :
-          content += "<h3><font color='Green'>Alert was %s in Database</font></h3>" % (resp)
-          content += "<h4><A HREF='/alert?mode=view'>View all Alert Configuration</A></h4>"
-        else :
-          content += "<h3><font color='Red'>** Alert Could not be written to Database (Result = %s) **</font></h3>" % (resp)
-      except:
-        content += "<h3>Bad response from /config/alert API"
-
+        try : 
+          req = Request(api_url + "/config/alert",data=data)
+          req.add_header('Content-Type','application/json')
+          resp = str(urlopen(req).read(),'utf-8')
+          if resp == 'created' or resp == 'updated' :
+            content += "<h3><font color='Green'>Alert was %s in Database</font></h3>" % (resp)
+            content += "<h4><A HREF='/alert?mode=view'>View all Alert Configuration</A></h4>"
+          else :
+            content += "<h3><font color='Red'>** Alert Could not be written to Database (Result = %s) **</font></h3>" % (resp)
+        except:
+          content += "<h3>Bad response from /config/alert API"
      
     # Either some detail was missing, or we want to go into form "edit" mode
     else :
       # See if we can get some details from the URL params
-      if 'entity' in form : 
-        entity = form['entity']
+      if 'entity' in args : 
+        entity = args['entity']
       else :
         entity = ""
-      if 'metric_class' in form : 
-        metric_class = form['metric_class']
+      if 'metric_class' in args : 
+        metric_class = args['metric_class']
       else :
         metric_class = ""
-      if 'metric_object' in form : 
-        metric_object = form['metric_object']
+      if 'metric_object' in args : 
+        metric_object = args['metric_object']
       else :
         metric_object = ""
-      if 'metric_instance' in form : 
-        metric_instance = form['metric_instance']
+      if 'metric_instance' in args : 
+        metric_instance = args['metric_instance']
       else :
         metric_instance = ""
-      if 'metric_name' in form : 
-        metric_name = form['metric_name']
+      if 'metric_name' in args : 
+        metric_name = args['metric_name']
       else :
         metric_name = ""
-      if 'alert_operator' in form : 
-        alert_operator = form['alert_operator']
+      if 'alert_operator' in args : 
+        alert_operator = args['alert_operator']
       else :
         alert_operator = ""
-      if 'alert_threshold' in form : 
-        alert_threshold = form['alert_threshold']
+      if 'alert_threshold' in args : 
+        alert_threshold = args['alert_threshold']
       else :
         alert_threshold = ""
-      if 'support_team' in form : 
-        support_team = form['support_team']
+      if 'support_team' in args : 
+        support_team = args['support_team']
       else :
         support_team = ""
-      if 'alert_tag' in form : 
-        alert_tag = form['alert_tag']
+      if 'alert_tag' in args : 
+        alert_tag = args['alert_tag']
       else :
         alert_tag = ""
 
@@ -249,11 +251,11 @@ def alert(args,form):
     content += "<h3><A HREF='/alert?mode=edit'>Add New Alert</A></h3>"
 
   elif mode == "delete" :
-    entity = form['entity']
-    metric_class = form['metric_class']
-    metric_object = form['metric_object']
-    metric_instance = form['metric_instance']
-    metric_name = form['metric_name']
+    entity = args['entity']
+    metric_class = args['metric_class']
+    metric_object = args['metric_object']
+    metric_instance = args['metric_instance']
+    metric_name = args['metric_name']
 
     doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name} 
     data = str(json.dumps(doc)).encode('utf-8')

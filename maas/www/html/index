@@ -28,7 +28,7 @@
   </TD>
   <TD>
     <h2>Testing</h2>
-    <h4><a href="/test-metric">Generate Test Metric</a></h4>
+    <h4><a href="/post-metric">Post a Test Metric</a></h4>
     <h4><a href="/evaluate">Evaluate all thresholds</a></h4>
     <h4><a href="/admin">Admin (hidden)</a></h4>
   </TD>

@@ -5,7 +5,7 @@ import json
 import maas_conf
 
 
-def collect(args):
+def collect(args,form):
   content = "<html><head><link rel='stylesheet' type='text/css' href='/static/dark.css'></head>"
   content += "<h1><A style='text-decoration:none' HREF='/'>Host Monitoring Configuration Management</a></h1>"
   content += "<hr>"
@@ -20,9 +20,9 @@ def collect(args):
   ########### EDIT
   if mode == "edit":
     # If we have a entityname and config, then write the config out
-    if 'config' in args and 'entity' in args :
-      entity = args['entity']
-      config = args['config']
+    if 'config' in form and 'entity' in form :
+      entity = form['entity']
+      config = form['config']
   
       # Get the platform for this host
       req = Request(api_url + "/entity?entity=" + entity,method='GET')
@@ -37,7 +37,7 @@ def collect(args):
    
       if resp == "created" or resp == "updated" : 
         # Rebuild the configuration so that it is pulled at next startup
-        urllib.request.urlopen(maas_conf.conf['maas']['url'] + "/telegraf-configure?host=" + entity + "&os=" + platform + "&reset=true")
+        urllib.request.urlopen(maas_conf.conf['www']['url'] + "/telegraf-configure?host=" + entity + "&os=" + platform + "&reset=true")
         content += "<h2>Config written, view <A HREF='/collect?mode=view&entity=" + entity + "'>here</A></h2>"
         content += "<h5>Agent needes to be retarted to pick up new config</h5>"
         content += "<h3>Click <A HREF='/telegraf-configure?host=" + entity + "'>here</A> to see Telgraf config</h3>"

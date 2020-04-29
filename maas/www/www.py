@@ -34,7 +34,7 @@ def admin():
   content = maas_admin.admin(args)
   return content
 
-@app.route('/alert', methods=['GET','POST'])
+@app.route('/alert', methods=['GET','POST','DELETE'])
 def alert():
   args = request.args
   form = request.form
@@ -47,10 +47,11 @@ def alert_groups():
   content = maas_alert_groups.alert_groups(args)
   return content
 
-@app.route('/collect', methods=['GET'])
+@app.route('/collect', methods=['GET','POST'])
 def collect():
   args = request.args
-  content = maas_collect.collect(args)
+  form = request.form
+  content = maas_collect.collect(args,form)
   return content
 
 @app.route('/evaluate', methods=['GET'])
@@ -67,15 +68,15 @@ def health():
 
 @app.route('/post-metric', methods=['GET','POST'])
 def post_metric():
-  args = request.args
   form = request.form
-  content = maas_post_metric.post_metric(args,form)
+  content = maas_post_metric.post_metric(form)
   return content
 
-@app.route('/telegraf-configure', methods=['GET'])
+@app.route('/telegraf-configure', methods=['GET','POST'])
 def telegraf_configure():
   args = request.args
-  content = maas_telegraf_configure.configure(args)
+  form = request.form
+  content = maas_telegraf_configure.configure(args,form)
   return content
 
 # Start the app and listen on all interfaces, port 9000
