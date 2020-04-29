@@ -517,7 +517,7 @@ def api_log_entity():
   # Log message that a host connected
   now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
   doc = { "entity":entity, "message":message, "timestamp":now} 
-  x = elasticsearch.post_document(es,log_config,"_doc","",doc)
+  x = elasticsearch.post_document(es,log_config,"_doc","",doc)['result']
   return x
 
 

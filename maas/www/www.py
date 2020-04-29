@@ -6,11 +6,11 @@ import urllib.request
 
 import sys
 sys.path.append("./scripts")
-import maas_conf
 import maas_admin
 import maas_alert
 import maas_alert_groups
 import maas_collect
+import maas_conf
 import maas_evaluate
 import maas_health
 import maas_index
