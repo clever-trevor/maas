@@ -48,7 +48,7 @@ def admin(args):
       content += resp
 
   else : 
-    f = open("/app/maas/www/html/admin","r")
+    f = open(maas_conf.conf['maas']['base_dir'] + "/www/html/admin","r")
     content += f.read()
 
   return content
