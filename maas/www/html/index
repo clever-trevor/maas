@@ -1,0 +1,36 @@
+<HTML>
+<html><head><link rel="stylesheet" type="text/css" href="/static/dark.css"></head>
+
+<h1>Ent Mgt Metrics as a Service Portal</h1>
+<hr>
+<TABLE align=center style="vertical-align:top;" border =0 width=80%>
+<TR style="vertical-align:top;">
+  <TD>
+    <h2>Agent Configuration</h2>
+    <h4><A HREF="/collect?mode=view">View config by node</A></h4>
+    <h4><A HREF="/collect?mode=edit">Edit config by node</A></h4>
+  </TD>
+  <TD>
+    <h2>Visualisation</h2>
+    <h4><a href="/health?entities=*">Agent Health</a></h4>
+    <h4><A HREF="%CHRONOGRAF%">Chronograf</A></h4>
+    <h4><A HREF="%GRAFANA%">Grafana</A></h4>
+    <h4><A HREF="%PROMETHEUS%">Prometheus</A></h4>
+  </TD>
+</TR>
+<TR style="vertical-align:top;">
+  <TD>
+    <h2>Alerting</h2>
+    <h4><a href="%KIBANA%">View Alert History</a></h4>
+    <h4><a href="/alert?mode=view">View Alert Configuration</a></h4>
+    <h4><a href="/alert?mode=edit">Edit Alert Configuration</a></h4>
+    <h4><a href="/alert-groups">Alert Grouping Management</a></h4>
+  </TD>
+  <TD>
+    <h2>Testing</h2>
+    <h4><a href="/test-metric">Generate Test Metric</a></h4>
+    <h4><a href="/evaluate">Evaluate all thresholds</a></h4>
+    <h4><a href="/admin">Admin (hidden)</a></h4>
+  </TD>
+</TR>
+</HTML>
