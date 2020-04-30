@@ -79,8 +79,8 @@ rm -f $BASE/influx/kapacitor
 ln -s $BASE/influx/kapacitor-1.5.5-1 $BASE/influx/kapacitor
 rm -f $BASE/grafana/grafana
 ln -s $BASE/grafana/grafana-6.7.3 $BASE/grafana/grafana
-rm -f $BASE/elk/elastic
-ln -s $BASE/elk/elasticsearch-7.6.2 $BASE/elk/elastic
+rm -f $BASE/elk/elasticsearch
+ln -s $BASE/elk/elasticsearch-7.6.2 $BASE/elk/elasticsearch
 
 ##############################
 # Copy config files only write if they are not already there
