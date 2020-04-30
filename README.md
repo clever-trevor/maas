@@ -9,7 +9,7 @@ It uses (or rather relies on) :<BR>
 <LI>Python - Standard Python3 package (Flask will be installed as part of this)
   <BR>
 <BR>
-The features are as<BR> follows :<BR>
+The features are as follows :<BR>
 <BR>
 <LI>Automated Telegraf deployment.  Agent calls in to a Webserver which builds a dynamic config based off config fragments.  <BR>
 There is a front end to manage what gets deployed to each host and Telegraf calls the web server on startup with a series of params to help build the config
