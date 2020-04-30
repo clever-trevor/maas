@@ -3,4 +3,6 @@ path.logs: /app/elk/logs
 
 network.host: 0.0.0.0
 
-discovery.seed_hosts: ["influxdb"]
+discovery.seed_hosts: "influxdb"
+cluster.initial_master_nodes: "influxdb"
+
