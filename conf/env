@@ -2,7 +2,7 @@
 url=http://192.168.1.113:5601
 [influxdb]
 url=http://192.168.1.113:8086
-binary=/app/influx/influxdb-1.7.10-1/usr/bin/influx
+binary=/app/influx/influxdb/usr/bin/influx
 [elastic]
 url=http://192.168.1.113:9200
 user=none

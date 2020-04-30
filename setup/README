@@ -2,10 +2,13 @@ Pre-Reqs
 - Python3
 - Flask
 - wget
+- Directory /app exists and owned by user running this process
 
 
-1) Download the installer
+1) Download the installer and run it
+  cd /app
   wget https://raw.githubusercontent.com/schmorgs/maas/master/setup/installer.sh
+  ./installer.sh
 
 2) Edit the Telegraf URL to point to this host
   vi /app/telegraf/telegraf.sh
@@ -47,3 +50,6 @@ Pre-Reqs
  
 10) Log on to the UI via Chrome
   http://192.168.1.xxx:9001/collect?mode=view
+
+11) Log on to Chronograf and set the Influx/KApacitor settings (defaults should be ok)
+  http://192.168.1.121:8888/sources/new?redirectPath=/
