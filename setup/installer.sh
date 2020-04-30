@@ -51,6 +51,7 @@ tar xzf $BASE/sw/grafana-6.7.3.linux-amd64.tar.gz
 cd $BASE/telegraf
 tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
 # Flask 
+cd $BASE/sw
 tar xzf $BASE/sw/Flask-1.1.2.tar.gz
 
 # MaaS files
