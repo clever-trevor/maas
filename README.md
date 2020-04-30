@@ -1,3 +1,4 @@
+<h2>Summary</h2>
 This project was started to build a self-service and partially automated front end to the Influx/Telegraf monitoring tools.
 
 It uses (or rather relies on) :<BR>
