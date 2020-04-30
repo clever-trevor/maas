@@ -1,23 +1,34 @@
-HOME=/app/git/maas
+GITHOME=/app/git/maas/maas
+HOME=/app/maas
 
-mkdir /app/maas/api
-cp $HOME/maas/api/* /app/maas/api
+# Various config scripts
+mkdir -p $HOME/conf/fragments
+cp -o $GITHOME/conf/env.template $HOME/conf
+# Don't overwrite any existing fragments
+cp -n $GITHOME/conf/fragments/* $HOME/conf/fragments
 
-mkdir -p /app/maas/conf/fragments
-cp $HOME/maas/conf/env.template /app/maas/conf
-cp $HOME/maas/conf/fragments/* /app/maas/conf/fragments
+# Installer scripts
+mkdir -p $HOME/install
+cp $GITHOME/install/* $HOME/install
 
-mkdir -p /app/maas/install
-cp $HOME/maas/install/* /app/maas/install
+# Initial setup scripts
+mkdir -p $HOME/setup
+cp $GITHOME/setup/* $HOME/setup
 
-mkdir -p /app/maas/www/scripts
-mkdir -p /app/maas/www/static
-mkdir -p /app/maas/www/html
-cp $HOME/maas/www/* /app/maas/www
-cp $HOME/maas/www/html/* /app/maas/www/html
-cp $HOME/maas/www/scripts/* /app/maas/www/scripts
-cp $HOME/maas/www/static/* /app/maas/www/static
+# Maas Application
+mkdir $HOME/api
+cp $GITHOME/api/* $HOME/maas/api
+mkdir -p $HOME/www
+cp $GITHOME/www/* $HOME/www
+mkdir -p $HOME/www/html
+cp $GITHOME/www/html/* $HOME/www/html
+mkdir -p $HOME/www/scripts
+cp $GITHOME/www/scripts/* $HOME/www/scripts
+mkdir -p $HOME/www/static
+cp $GITHOME/www/static/* $HOME/www/static
 
-cd /app/maas/install
-/app/maas/install/upload-templates.py
+# Now run the script to upload templates
+cd $HOME/install
+$HOME/install/install.py
+$HOME/install/upload-templates.py
 

@@ -1,29 +1,29 @@
-#!/usr/bin/python3
 
 import urllib.parse
 from urllib.request import Request,urlopen
-import maas
+import maas_utils
 import json
 import time
 import datetime
-import configparser
+import maas_conf
+import maas_utils
 
-maasconf = configparser.RawConfigParser()
-maasconf.read('/app/maas/conf/env')
-
-api_url = maasconf['api']['url']
+api_url = maas_conf.conf['api']['url']
 
 def html_header():
-  print("Content-Type:text/html;\n")
-  print("<html><head><link rel='stylesheet' type='text/css' href='/dark.css'></head>")
-  print("<h1><A style='text-decoration:none' HREF='/cgi-bin/index'>Alert Evaluation</a></h1>")
-  print("<hr>")
+  global content
+  content += "<html><head><link rel='stylesheet' type='text/css' href='/static/dark.css'></head>"
+  content += "<h1><A style='text-decoration:none' HREF='/'>Alert Evaluation</a></h1>"
+  content += "<hr>"
+  return content
 
 def parse_alerts():
-  print(" <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>")
+  global content
+  content += " <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>"
 
   req = Request(api_url + "/config/alert",method='GET')
   records = json.loads(json.load(urlopen(req)))
+  records = sorted(records,key=lambda i: i['entity'])
 
   tests = 0
   passes = 0
@@ -51,7 +51,7 @@ def parse_alerts():
     if metric_instance != "" : 
       query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
     query = urllib.parse.quote(query)
-    url = maasconf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
+    url = maas_conf.conf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
     logMsg("current",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
 
@@ -68,13 +68,13 @@ def parse_alerts():
     else:
       status = "<FONT COLOR=RED>%s</FONT>" % (status)
 
-    print("<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp) )
+    content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp) 
 
     tests += 1
 
-  print("</TABLE>")
+  content += "</TABLE>"
 
-  print("<H3>%s Tests evaluated<BR>Passes=%s Alerts=%s Failed=%s</H3>" % ( tests, passes,alerts,fails))
+  content += "<H3>%s Tests evaluated<BR>Passes=%s Alerts=%s Failed=%s</H3>" % ( tests, passes,alerts,fails)
 
   return tests
 
@@ -92,7 +92,7 @@ def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,al
   except:
     value = 0
 
-  result = maas.evaluate_metric(value,alert_operator,alert_threshold)
+  result = maas_utils.evaluate_metric(value,alert_operator,alert_threshold)
   metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
   if metric_timestamp == "" : 
       status = "NODATARETURNED"
@@ -113,23 +113,26 @@ def logMsg(index,entity,metric_class,metric_object,metric_instance,metric_name,a
   req.add_header('Content-Type','application/json')
   resp = str(urlopen(req).read(),'utf-8')
 
-def main():
+def evaluate(args):
+  global content
+  content = ""
+  api_url = maas_conf.conf['api']['url']
+  # Delete old records from the "current" log
+  doc = { "admin":"admin"}
+  data = str(json.dumps(doc)).encode("utf-8")
+  req = Request(api_url + "/admin/clear_current_alert_log",data=data)
+  req.add_header('Content-Type','application/json')
+  resp = str(urlopen(req).read(),'utf-8')
+
+  start = time.process_time()
+
   html_header()
-  tests = parse_alerts()
-  return tests
+  tests = str(parse_alerts())
 
-# Delete old records from the "current" log
-doc = { "admin":"admin"}
-data = str(json.dumps(doc)).encode("utf-8")
-req = Request(api_url + "/admin/clear_current_alert_log",data=data)
-req.add_header('Content-Type','application/json')
-resp = str(urlopen(req).read(),'utf-8')
+  time_taken = str(time.process_time() - start)
+  summary = "Tests:" + tests + " Time Taken:" + time_taken
+  logMsg("current","summary","","","","","","","",summary,"","","")
+  content += "</html>"
 
-start = time.process_time()
-
-tests = str(main())
-
-time_taken = str(time.process_time() - start)
-summary = "Tests:" + tests + " Time Taken:" + time_taken
-logMsg("current","summary","","","","","","","",summary,"","","")
+  return content
 

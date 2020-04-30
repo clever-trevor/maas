@@ -1,0 +1,10 @@
+- Log alert-group to Elastic
+- Authentication / token access to destructive commands
+- Startup scripts for
+	Elastic
+	Kibana
+	API 
+	Influx
+	Chronograf
+- Housekeeping on metric retention
+- Check API layer on each web page load

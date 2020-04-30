@@ -1,0 +1,4 @@
+# Custom Process monitor for Linux
+[[inputs.procstat]]
+  exe = "%PROCESS%"
+

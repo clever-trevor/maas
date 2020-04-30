@@ -1,32 +1,41 @@
-rm -rf /app/git/maas/maas/api
-mkdir -p /app/git/maas/maas/api >/dev/null 2>&1
-cp /app/maas/api/* /app/git/maas/maas/api>/dev/null 2>&1
+HOME=/app
+GITHOME=/app/git
 
-rm -rf /app/git/maas/maas/conf
-mkdir -p /app/git/maas/maas/conf >/dev/null 2>&1
-cp /app/maas/conf/* /app/git/maas/maas/conf/ >/dev/null 2>&1
+# MaaS API App
+rm -rf $GITHOME/maas/api
+mkdir -p $GITHOME/maas/api 
+cp $HOME/maas/api/* $GITHOME/maas/api
 
-rm -rf /app/git/maas/maas/conf/fragments
-mkdir -p /app/git/maas/maas/conf/fragments >/dev/null 2>&1
-cp /app/maas/conf/fragments/* /app/git/maas/maas/conf/fragments >/dev/null 2>&1
+# MaaS Config files
+rm -rf $GITHOME/maas/conf
+mkdir -p $GITHOME/maas/conf/fragments
+cp $HOME/maas/conf/* $GITHOME/maas/conf/ 
+cp $HOME/maas/conf/fragments/* $GITHOME/maas/conf/fragments 
 
-rm -rf /app/git/maas/maas/install
-mkdir -p /app/git/maas/maas/install >/dev/null 2>&1
-cp /app/maas/install/* /app/git/maas/maas/install >/dev/null 2>&1
+# MaaS Installation scripts
+rm -rf $GITHOME/maas/install
+mkdir -p $GITHOME/maas/install 
+cp $HOME/maas/install/* $GITHOME/maas/install 
 
-rm -rf /app/git/maas/maas/www
-mkdir -p /app/git/maas/maas/www/html >/dev/null 2>&1
-mkdir -p /app/git/maas/maas/www/scripts >/dev/null 2>&1
-mkdir -p /app/git/maas/maas/www/static >/dev/null 2>&1
-cp /app/maas/www/* /app/git/maas/maas/www >/dev/null 2>&1
-cp /app/maas/www/html/* /app/git/maas/maas/www/html >/dev/null 2>&1
-cp /app/maas/www/scripts/* /app/git/maas/maas/www/scripts >/dev/null 2>&1
-cp /app/maas/www/static/* /app/git/maas/maas/www/static >/dev/null 2>&1
+# MaaS Setup scripts
+rm -rf $GITHOME/maas/setup
+mkdir -p $GITHOME/maas/setup
+cp $HOME/maas/setup/* $GITHOME/maas/setup
 
-rm -rf /app/git/maas/telegraf
-mkdir -p /app/git/maas/telegraf >/dev/null 2>&1
-cp /app/telegraf/telegraf.sh /app/git/maas/telegraf >/dev/null 2>&1
+# MaaS Web page app
+rm -rf $GITHOME/maas/www
+mkdir -p $GITHOME/maas/www/html 
+mkdir -p $GITHOME/maas/www/scripts 
+mkdir -p $GITHOME/maas/www/static 
+cp $HOME/maas/www/* $GITHOME/maas/www 
+cp $HOME/maas/www/html/* $GITHOME/maas/www/html 
+cp $HOME/maas/www/scripts/* $GITHOME/maas/www/scripts 
+cp $HOME/maas/www/static/* $GITHOME/maas/www/static 
 
-cp /app/maas/installer.sh /app/git/maas >/dev/null 2>&1
+# Telegraf agent files
+rm -rf $GITHOME/telegraf
+mkdir -p $GITHOME/telegraf 
+cp $HOME/telegraf/telegraf.sh $GITHOME/telegraf 
+
   
 
