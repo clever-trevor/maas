@@ -84,18 +84,18 @@ ln -s $BASE/elk/elasticsearch-7.6.2 $BASE/elk/elastic
 
 ##############################
 # Copy config files only write if they are not already there
-cp -n $BASE/setup/influxdb.conf $BASE/influx/conf
-cp -n $BASE/setup/kapacitor.conf $BASE/influx/conf
-cp -n $BASE/setup/elasticsearch.yml $BASE/elk/conf
-cp -n $BASE/setup/kibana.yml $BASE/elk/conf
-cp -n $BASE/setup/jvm.options $BASE/elk/conf
-cp -n $BASE/setup/log4j2.properties $BASE/elk/conf
+cp -n $HOME/setup/influxdb.conf $BASE/influx/conf
+cp -n $HOME/setup/kapacitor.conf $BASE/influx/conf
+cp -n $HOME/setup/elasticsearch.yml $BASE/elk/conf
+cp -n $HOME/setup/kibana.yml $BASE/elk/conf
+cp -n $HOME/setup/jvm.options $BASE/elk/conf
+cp -n $HOME/setup/log4j2.properties $BASE/elk/conf
 
 ##############################
 # Copy startup scripts
-cp $BASE/setup/influxdb.sh $BASE/influx
-cp $BASE/setup/kapacitor.sh $BASE/influx
-cp $BASE/setup/chronograf.sh $BASE/influx
-cp $BASE/setup/telegraf.sh $BASE/telegraf
-cp $BASE/setup/elastic.sh $BASE/elk
+cp $HOME/setup/influxdb.sh $BASE/influx
+cp $HOME/setup/kapacitor.sh $BASE/influx
+cp $HOME/setup/chronograf.sh $BASE/influx
+cp $HOME/setup/telegraf.sh $BASE/telegraf
+cp $HOME/setup/elastic.sh $BASE/elk
 
