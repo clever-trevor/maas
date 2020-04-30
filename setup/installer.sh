@@ -50,20 +50,20 @@ tar xzf $BASE/sw/grafana-6.7.3.linux-amd64.tar.gz
 # Telegraf agent
 cd $BASE/telegraf
 tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
+
 # MaaS files
 cd $HOME
 rm -rf $HOME/api $HOME/install $HOME/setup $HOME/www
 mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/setup $HOME/www
 unzip -o $BASE/sw/master.zip
-cp -r $HOME/maas-master/maas/api/* $HOME/api
+cp -r $HOME/maas-master/api/* $HOME/api
 # Don't overwrite any existing config files
-cp -rn $HOME/maas-master/maas/conf/* $HOME/conf
-cp -r $HOME/maas-master/maas/install/* $HOME/install
-cp -r $HOME/maas-master/maas/setup/* $HOME/setup
-cp -r $HOME/maas-master/maas/www/* $HOME/www
+cp -rn $HOME/maas-master/conf/* $HOME/conf
+cp -r $HOME/maas-master/install/* $HOME/install
+cp -r $HOME/maas-master/setup/* $HOME/setup
+cp -r $HOME/maas-master/www/* $HOME/www
 # Remove rest of repo
 rm -rf $HOME/maas-master
-rm -rf $HOME/maas
 
 # Elasticsearch 
 cd $BASE/elk
