@@ -1,6 +1,5 @@
 Pre-Reqs
 - Python3
-- Flask
 - wget
 - Directory /app exists and owned by user running this process
 

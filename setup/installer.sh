@@ -34,6 +34,7 @@ wget https://dl.grafana.com/oss/release/grafana-6.7.3.linux-amd64.tar.gz -O graf
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.14.1_linux_amd64.tar.gz -O telegraf-1.14.1_linux_amd64.tar.gz
 wget https://github.com/schmorgs/maas/archive/master.zip -O master.zip
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-linux-x86_64.tar.gz -O elasticsearch-7.6.2-linux-x86_64.tar.gz
+wget https://files.pythonhosted.org/packages/4e/0b/cb02268c90e67545a0e3a37ea1ca3d45de3aca43ceb7dbf1712fb5127d5d/Flask-1.1.2.tar.gz
 
 ##############################
 # Unzip binaries
@@ -49,6 +50,8 @@ tar xzf $BASE/sw/grafana-6.7.3.linux-amd64.tar.gz
 # Telegraf agent
 cd $BASE/telegraf
 tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
+# Flask 
+tar xzf $BASE/sw/Flask-1.1.2.tar.gz
 
 # MaaS files
 cd $HOME
@@ -98,3 +101,6 @@ cp $HOME/setup/chronograf.sh $BASE/influx
 cp $HOME/setup/telegraf.sh $BASE/telegraf
 cp $HOME/setup/elastic.sh $BASE/elk
 
+# Install Flask
+cd $BASE/sw/Flask-1.1.2
+python3 setup.py install --user
