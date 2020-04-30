@@ -12,6 +12,8 @@ mkdir -p $BASE/git
 
 mkdir -p $BASE/sw
 
+mkdir -p $BASE/kafka
+
 mkdir -p $BASE/influx/data/influxdb
 mkdir -p $BASE/influx/data/chronograf
 mkdir -p $BASE/influx/data/kapacitor
@@ -35,6 +37,7 @@ wget https://dl.influxdata.com/telegraf/releases/telegraf-1.14.1_linux_amd64.tar
 wget https://github.com/schmorgs/maas/archive/master.zip -O master.zip
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-linux-x86_64.tar.gz -O elasticsearch-7.6.2-linux-x86_64.tar.gz
 wget https://files.pythonhosted.org/packages/4e/0b/cb02268c90e67545a0e3a37ea1ca3d45de3aca43ceb7dbf1712fb5127d5d/Flask-1.1.2.tar.gz
+wget http://apache.mirror.anlx.net/kafka/2.5.0/kafka_2.12-2.5.0.tgz
 
 ##############################
 # Unzip binaries
@@ -53,6 +56,9 @@ tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
 # Flask 
 cd $BASE/sw
 tar xzf $BASE/sw/Flask-1.1.2.tar.gz
+# Kafka
+cd /$BASE/kafka
+tar xzf $BASE/sw/kafka_2.12-2.5.0.tgz
 
 # MaaS files
 cd $HOME
@@ -84,6 +90,8 @@ rm -f $BASE/grafana/grafana
 ln -s $BASE/grafana/grafana-6.7.3 $BASE/grafana/grafana
 rm -f $BASE/elk/elasticsearch
 ln -s $BASE/elk/elasticsearch-7.6.2 $BASE/elk/elasticsearch
+rm -f $BASE/kafka/kafka
+ln -s $BASE/kafka/kafka_2.12-2.5.0 $BASE/kafka/kafka
 
 ##############################
 # Copy config files only write if they are not already there
