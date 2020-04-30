@@ -7,7 +7,7 @@ mkdir -p $BASE
 
 mkdir -p $BASE/grafana
 mkdir -p $BASE/telegraf
-mkdir -p $HOME/api $HOME/api/conf $HOME/install $HOME/www $HOME/setup
+mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/www $HOME/setup
 mkdir -p $BASE/git
 
 mkdir -p $BASE/sw
@@ -57,7 +57,7 @@ mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/setup $HOME/www
 unzip -o $BASE/sw/master.zip
 cp -r $HOME/maas-master/maas/api/* $HOME/api
 # Don't overwrite any existing config files
-cp -rn $HOME/maas-master/maas/conf/* $HOME/api/conf
+cp -rn $HOME/maas-master/maas/conf/* $HOME/conf
 cp -r $HOME/maas-master/maas/install/* $HOME/install
 cp -r $HOME/maas-master/maas/setup/* $HOME/setup
 cp -r $HOME/maas-master/maas/www/* $HOME/www
