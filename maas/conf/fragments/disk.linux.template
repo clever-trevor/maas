@@ -1,4 +1,0 @@
-# Custom Filesystem Monitor for Linux
-[[inputs.disk]]
-  mount_points = ["%FILESYSTEM%"]
-

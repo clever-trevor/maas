@@ -1,3 +1,0 @@
-
-<h4><A HREF="/admin?cmd=delete-metrics&entity=">Delete Influx Metrics</A></h4>
-<h4><A HREF="/admin?cmd=delete-entity&entity=">Remove host from system</A></h4>

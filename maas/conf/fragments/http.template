@@ -1,4 +1,0 @@
-# Custom URL Monitor
-[[inputs.http_response]]
-  urls = [ "%URL%" ]
-  interval = "1m"

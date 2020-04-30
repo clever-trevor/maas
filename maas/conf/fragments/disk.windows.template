@@ -1,4 +1,0 @@
-# Custom Filesystem Monitor for Windows
-[[inputs.disk]]
-  mount_points = ["%FILESYSTEM%"]
-

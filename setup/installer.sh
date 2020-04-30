@@ -84,14 +84,18 @@ ln -s $BASE/elk/elasticsearch-7.6.2 $BASE/elk/elastic
 
 ##############################
 # Copy config files only write if they are not already there
-cp -n $BASE/sw/influx/conf/* $BASE/influx/conf
-cp -n $BASE/sw/elastic/*yml $BASE/elk/conf
-cp -n $BASE/sw/elastic/*options $BASE/elk/conf
-cp -n $BASE/sw/elastic/*properties $BASE/elk/conf
+cp -n $BASE/setup/influxdb.conf $BASE/influx/conf
+cp -n $BASE/setup/kapacitor.conf $BASE/influx/conf
+cp -n $BASE/setup/elasticsearch.yml $BASE/elk/conf
+cp -n $BASE/setup/kibana.yml $BASE/elk/conf
+cp -n $BASE/setup/jvm.options $BASE/elk/conf
+cp -n $BASE/setup/log4j2.properties $BASE/elk/conf
 
 ##############################
 # Copy startup scripts
-cp $BASE/sw/influx/conf/*.sh $BASE/influx
-cp $BASE/sw/telegraf/*.sh $BASE/telegraf
-cp $BASE/sw/elastic/*.sh $BASE/elk
+cp $BASE/setup/influxdb.sh $BASE/influx
+cp $BASE/setup/kapacitor.sh $BASE/influx
+cp $BASE/setup/chronograf.sh $BASE/influx
+cp $BASE/setup/telegraf.sh $BASE/telegraf
+cp $BASE/setup/elastic.sh $BASE/elk
 
