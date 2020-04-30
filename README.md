@@ -5,7 +5,7 @@ It uses (or rather relies on) :<BR>
 <LI>Chronograf - Visualisation
 <LI>Telegraf - Agents for metric collection
 <LI>Elasticsearch - Used to store telegraf configs, alert definitions, logs, etc.
-<LI>Python - Standard Python3 package but with Flask installed
+<LI>Python - Standard Python3 package (Flask will be installed as part of this)
   <BR>
 <BR>
 The features are as<BR> follows :<BR>
@@ -17,3 +17,14 @@ There is a front end to manage what gets deployed to each host and Telegraf call
 <LI>Agent health.  Simple page to show status of each agent by showing host uptime and last measurement with simple RAG status<BR>
 <BR>
 Will write more when the project is a bit more mature.<BR>
+  
+<h2>What is included</h2>
+This project is designed to install on a single Linux server as a non-root user.  The installer script will :
+<LI>Download binaries for InfluxDB, Chronograf, Kapacitor, Elasticsearch, Telegraf, Flask (Python), Web application
+<LI>Install the binaries, symlinks, sample configs
+<LI>Provide a web front end (via Flask) to view and configure the agents as well as thresholds/alerts
+  
+ If you already have an Elasticsearch instance, you can amend the ./maas/conf/env config file to point to that instead.
+ 
+ <h2>How to install</h2>
+ Look at the ./maas/setup/README file for details
