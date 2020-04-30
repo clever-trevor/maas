@@ -1,0 +1,49 @@
+Pre-Reqs
+- Python3
+- Flask
+- wget
+
+
+1) Download the installer
+  wget https://raw.githubusercontent.com/schmorgs/maas/master/setup/installer.sh
+
+2) Edit the Telegraf URL to point to this host
+  vi /app/telegraf/telegraf.sh
+  http://192.168.1.xxx:9001/.....
+
+3) Edit the endpoints in the config file
+  vi /app/maas/conf/env
+  Replace IP addresses with this host
+
+4) Edit the Elasticsearch startup file to reference this host
+  vi /app/elk/conf/elasticsearch.yml
+
+5) Start up Elasticsearch and wait for it to start
+  /app/elk/elastic.sh
+  curl 127.0.0.1:9200/_cat/health
+  NOTE - you may need to tune your system settings for Elastic to run
+         Check /app/elk/logs for errors
+
+6) Run the installer
+  cd /app/maas/install
+  ./install.py
+  ./upload-templates.py
+  curl 127.0.0.1:9200/_cat/indices
+
+7) Start Influx components and confirm they start
+  /app/influx/influxdb.sh
+  /app/influx/chronograf.sh
+  /app/influx/kapacitor.sh
+  ps -ef | egrep "chronograf|influxd|kapacitor" | grep -v grep
+
+8) Start the API and Web server
+  /app/maas/api/api.sh
+  /app/maas/www/www.sh
+  ps -ef | egrep "api.py|www.py" | grep -v grep
+
+9) Start Telegraf agent
+  /app/telegraf/telegraf.sh
+  ps -ef | grep telegraf | grep -v grep
+ 
+10) Log on to the UI via Chrome
+  http://192.168.1.xxx:9001/collect?mode=view
