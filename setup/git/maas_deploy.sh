@@ -27,7 +27,7 @@ cp $GITHOME/setup/telegraf/* $HOME/setup/telegraf
 
 # Maas Application
 mkdir $HOME/api
-cp $GITHOME/api/* $HOME/maas/api
+cp $GITHOME/api/* $HOME/api
 mkdir -p $HOME/www
 cp $GITHOME/www/* $HOME/www
 mkdir -p $HOME/www/html
