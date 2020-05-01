@@ -24,7 +24,6 @@
 
   omit_hostname = false
 
-
 # Configuration for sending metrics to InfluxDB
 [[outputs.influxdb]]
   urls = ["%INFLUXDB%"]
