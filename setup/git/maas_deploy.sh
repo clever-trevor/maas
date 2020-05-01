@@ -1,4 +1,4 @@
-GITHOME=/app/git/maas/maas
+GITHOME=/app/git/maas
 HOME=/app/maas
 
 # Various config scripts
