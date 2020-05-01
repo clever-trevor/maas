@@ -31,33 +31,43 @@
 
 # Read metrics about cpu usage
 [[inputs.cpu]]
+  fieldpass = ["usage_nice","usage_idle","usage_system","usage_user"]
 
 [[inputs.processes]]
+  fieldpass = ["zombies","blocked","idle","running","sleeping", "total","total_threads"]
 
 [[inputs.mem]]
+  fieldpass = ["used_percent","swap_free","swap_total"]
 
 [[inputs.system]]
+  fieldpass = ["load1","load5","load15","uptime"]
 
 [[inputs.net]]
   ignore_protocol_stats = true
 
 [[inputs.disk]]
   mount_points = ["/","/boot","/home","/opt","/tmp","/usr","/var","/var/crash"]
+  fieldpass = ["free","total","used_percent","inodes_free","inodes_total"]
 
 [[inputs.procstat]]
   exe = "sshd"
+  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "ntpd"
+  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "xinetd"
+  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "crond"
+  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "rsyslogd"
+  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 ## Custom configurations start here
 

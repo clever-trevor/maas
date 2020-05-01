@@ -32,10 +32,20 @@ cp $HOME/maas/www/html/* $GITHOME/maas/www/html
 cp $HOME/maas/www/scripts/* $GITHOME/maas/www/scripts 
 cp $HOME/maas/www/static/* $GITHOME/maas/www/static 
 
+# MaaS Kafka consumer
+rm -rf $GITHOME/maas/kafka
+mkdir -p $GITHOME/maas/kafka
+cp $HOME/maas/kafka/* $GITHOME/maas/kafka
+
 # Telegraf agent files
 rm -rf $GITHOME/telegraf
 mkdir -p $GITHOME/telegraf 
 cp $HOME/telegraf/telegraf.sh $GITHOME/telegraf 
 
-  
+# Kafka files
+rm -rf $GITHOME/kafka
+mkdir -p $GITHOME/kafka
+cp $HOME/kafka/kafka-server-1.sh $GITHOME/kafka
+cp $HOME/kafka/conf/kafka-server-1.properties $GITHOME/kafka/conf
+
 

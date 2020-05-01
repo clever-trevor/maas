@@ -1,4 +1,5 @@
 # Custom Filesystem Monitor for Linux
 [[inputs.disk]]
   mount_points = ["%FILESYSTEM%"]
+  fieldpass = ["free","total","used_percent","inodes_free","inodes_total"]
 

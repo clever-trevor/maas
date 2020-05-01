@@ -12,8 +12,6 @@ mkdir -p $BASE/git
 
 mkdir -p $BASE/sw
 
-mkdir -p $BASE/kafka
-
 mkdir -p $BASE/influx/data/influxdb
 mkdir -p $BASE/influx/data/chronograf
 mkdir -p $BASE/influx/data/kapacitor
@@ -24,6 +22,10 @@ mkdir -p $BASE/elk
 mkdir -p $BASE/elk/conf
 mkdir -p $BASE/elk/data
 mkdir -p $BASE/elk/logs
+
+mkdir -p $BASE/kafka
+mkdir -p $BASE/kafka/conf
+mkdir -p $BASE/kafka/logs
 
 ##############################
 # Download binaries
@@ -36,29 +38,26 @@ wget https://dl.grafana.com/oss/release/grafana-6.7.3.linux-amd64.tar.gz -O graf
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.14.1_linux_amd64.tar.gz -O telegraf-1.14.1_linux_amd64.tar.gz
 wget https://github.com/schmorgs/maas/archive/master.zip -O master.zip
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-linux-x86_64.tar.gz -O elasticsearch-7.6.2-linux-x86_64.tar.gz
-wget https://files.pythonhosted.org/packages/4e/0b/cb02268c90e67545a0e3a37ea1ca3d45de3aca43ceb7dbf1712fb5127d5d/Flask-1.1.2.tar.gz -O Flask-1.1.2.tar.gz
-wget http://apache.mirror.anlx.net/kafka/2.5.0/kafka_2.12-2.5.0.tgz -O kafka_2.12-2.5.0.tgz
+wget https://www.apache.org/dyn/closer.cgi?path=/kafka/2.5.0/kafka_2.12-2.5.0.tgz
 
 ##############################
 # Unzip binaries
+##############################
+
 # Influx components
 cd $BASE/influx/
 tar xzf $BASE/sw/influxdb-1.8.0_linux_amd64.tar.gz
 #tar xzf $BASE/sw/chronograf-1.8.2_linux_arm64.tar.gz
 tar xzf $BASE/sw/chronograf-1.8.2_linux_amd64.tar.gz
 tar xzf $BASE/sw/kapacitor-1.5.5_linux_amd64.tar.gz
+
 # Grafana
 cd $BASE/grafana
 tar xzf $BASE/sw/grafana-6.7.3.linux-amd64.tar.gz
+
 # Telegraf agent
 cd $BASE/telegraf
 tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
-# Flask 
-cd $BASE/sw
-tar xzf $BASE/sw/Flask-1.1.2.tar.gz
-# Kafka
-cd /$BASE/kafka
-tar xzf $BASE/sw/kafka_2.12-2.5.0.tgz
 
 # MaaS files
 cd $HOME
@@ -77,6 +76,10 @@ rm -rf $HOME/maas-master
 # Elasticsearch 
 cd $BASE/elk
 tar xzf $BASE/sw/elasticsearch-7.6.2-linux-x86_64.tar.gz
+
+# Kafka
+cd $BASE/kafka
+tar xzf $BASE/se/kafka_2.12-2.5.0.tgz
 
 ##############################
 # Symlink binaries to unversions directories
@@ -101,6 +104,7 @@ cp -n $HOME/setup/elasticsearch.yml $BASE/elk/conf
 cp -n $HOME/setup/kibana.yml $BASE/elk/conf
 cp -n $HOME/setup/jvm.options $BASE/elk/conf
 cp -n $HOME/setup/log4j2.properties $BASE/elk/conf
+cp -n $HOME/setup/kafka-server-1.properties $BASE/kafka/kafka/conf
 
 ##############################
 # Copy startup scripts
@@ -109,9 +113,5 @@ cp $HOME/setup/kapacitor.sh $BASE/influx
 cp $HOME/setup/chronograf.sh $BASE/influx
 cp $HOME/setup/telegraf.sh $BASE/telegraf
 cp $HOME/setup/elastic.sh $BASE/elk
-
-# Install Flask
-cd $BASE/sw/Flask-1.1.2
-python3 setup.py install --user
-
+cp $HOME/setup/kafka-server-1.sh $BASE/kafka
 

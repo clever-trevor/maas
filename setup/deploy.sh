@@ -27,6 +27,10 @@ cp $GITHOME/www/scripts/* $HOME/www/scripts
 mkdir -p $HOME/www/static
 cp $GITHOME/www/static/* $HOME/www/static
 
+# Kafka
+mkdir -p $HOME/kafka
+cp $GITHOME/kafka/* $HOME/kafka
+
 # Now run the script to upload templates
 cd $HOME/install
 $HOME/install/install.py

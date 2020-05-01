@@ -30,4 +30,4 @@
   urls = ["%INFLUXDB%"]
 
 [[inputs.system]]
-
+  fieldpass = ["uptime"]

@@ -30,14 +30,22 @@
 
 # Read metrics about cpu usage
 [[inputs.cpu]]
+  fieldpass = ["usage_nice","usage_idle","usage_system","usage_user"]
+
 [[inputs.mem]]
+  fieldpass = ["used_percent","swap_free","swap_total"]
+
 [[inputs.system]]
+  fieldpass = ["uptime"]
 
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
     ObjectName = "System"
     Instances = ["------"]
     Counters = ["Processes"]
+
+[[inputs.disk]]
+  mount_points = ["C:"]
 
 ## Custom configurations start here
 

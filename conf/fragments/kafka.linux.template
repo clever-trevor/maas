@@ -1,0 +1,4 @@
+# Kafka output
+[[outputs.kafka]]
+  brokers = ["%BROKER%"]
+  topic = "telegraf"

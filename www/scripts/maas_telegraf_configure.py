@@ -89,6 +89,12 @@ def configure(args):
             req =  Request(api_url + "/config/fragment?name=" + fragment)
             x = json.load(urlopen(req))
             x = x.replace("\\n","\n").replace("\\\"","\"").replace("%PORT%",instance)
+          # Kafka output
+          elif monitor_type == "kafka":
+            fragment = "kafka." + platform + ".template"
+            req =  Request(api_url + "/config/fragment?name=" + fragment)
+            x = json.load(urlopen(req))
+            x = x.replace("\\n","\n").replace("\\\"","\"").replace("%BROKER%",instance)
           # Pre-populated template
           elif monitor_type == "template":
             fragment = "template." + instance + "." + platform + ".template"
