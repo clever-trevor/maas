@@ -19,8 +19,17 @@ cp $HOME/maas/install/* $GITHOME/maas/install
 
 # MaaS Setup scripts
 rm -rf $GITHOME/maas/setup
-mkdir -p $GITHOME/maas/setup
+mkdir -p $GITHOME/maas/setup/elk
+mkdir -p $GITHOME/maas/setup/git
+mkdir -p $GITHOME/maas/setup/kafka
+mkdir -p $GITHOME/maas/setup/influx
+mkdir -p $GITHOME/maas/setup/telegraf
 cp $HOME/maas/setup/* $GITHOME/maas/setup
+cp $HOME/maas/setup/elk/* $GITHOME/maas/setup/elk
+cp $HOME/maas/setup/git/* $GITHOME/maas/setup/git
+cp $HOME/maas/setup/kafka/* $GITHOME/maas/setup/kafka
+cp $HOME/maas/setup/influx/* $GITHOME/maas/setup/influx
+cp $HOME/maas/setup/telegraf/* $GITHOME/maas/setup/telegraf
 
 # MaaS Web page app
 rm -rf $GITHOME/maas/www
@@ -36,16 +45,4 @@ cp $HOME/maas/www/static/* $GITHOME/maas/www/static
 rm -rf $GITHOME/maas/kafka
 mkdir -p $GITHOME/maas/kafka
 cp $HOME/maas/kafka/* $GITHOME/maas/kafka
-
-# Telegraf agent files
-rm -rf $GITHOME/telegraf
-mkdir -p $GITHOME/telegraf 
-cp $HOME/telegraf/telegraf.sh $GITHOME/telegraf 
-
-# Kafka files
-rm -rf $GITHOME/kafka
-mkdir -p $GITHOME/kafka
-cp $HOME/kafka/kafka-server-1.sh $GITHOME/kafka
-cp $HOME/kafka/conf/kafka-server-1.properties $GITHOME/kafka/conf
-
 

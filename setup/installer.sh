@@ -62,13 +62,19 @@ tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
 # MaaS files
 cd $HOME
 rm -rf $HOME/api $HOME/install $HOME/setup $HOME/www
-mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/setup $HOME/www
+mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/www
+mkdir -p $HOME/setup/elk  $HOME/setup/git $HOME/setup/influx $HOME/setup/kafka $HOME/setup/telegraf 
 unzip -o $BASE/sw/master.zip
 cp -r $HOME/maas-master/api/* $HOME/api
 # Don't overwrite any existing config files
 cp -rn $HOME/maas-master/conf/* $HOME/conf
 cp -r $HOME/maas-master/install/* $HOME/install
-cp -r $HOME/maas-master/setup/* $HOME/setup
+cp -r $HOME/maas-master/setup/* $HOME/setup > /dev/null 2>&1
+cp -r $HOME/maas-master/setup/elk/* $HOME/setup/elk
+cp -r $HOME/maas-master/setup/git/* $HOME/setup/git
+cp -r $HOME/maas-master/setup/influx/* $HOME/setup/influx
+cp -r $HOME/maas-master/setup/kafka/* $HOME/setup/kafka
+cp -r $HOME/maas-master/setup/telegraf/* $HOME/setup/telegraf
 cp -r $HOME/maas-master/www/* $HOME/www
 # Remove rest of repo
 rm -rf $HOME/maas-master
@@ -79,7 +85,7 @@ tar xzf $BASE/sw/elasticsearch-7.6.2-linux-x86_64.tar.gz
 
 # Kafka
 cd $BASE/kafka
-tar xzf $BASE/se/kafka_2.12-2.5.0.tgz
+tar xzf $BASE/sw/kafka_2.12-2.5.0.tgz
 
 ##############################
 # Symlink binaries to unversions directories
@@ -98,20 +104,22 @@ ln -s $BASE/kafka/kafka_2.12-2.5.0 $BASE/kafka/kafka
 
 ##############################
 # Copy config files only write if they are not already there
-cp -n $HOME/setup/influxdb.conf $BASE/influx/conf
-cp -n $HOME/setup/kapacitor.conf $BASE/influx/conf
-cp -n $HOME/setup/elasticsearch.yml $BASE/elk/conf
-cp -n $HOME/setup/kibana.yml $BASE/elk/conf
-cp -n $HOME/setup/jvm.options $BASE/elk/conf
-cp -n $HOME/setup/log4j2.properties $BASE/elk/conf
-cp -n $HOME/setup/kafka-server-1.properties $BASE/kafka/kafka/conf
+cp -n $HOME/setup/influx/influxdb.conf $BASE/influx/conf
+cp -n $HOME/setup/influx/kapacitor.conf $BASE/influx/conf
+cp -n $HOME/setup/elk/elasticsearch.yml $BASE/elk/conf
+cp -n $HOME/setup/elk/kibana.yml $BASE/elk/conf
+cp -n $HOME/setup/elk/jvm.options $BASE/elk/conf
+cp -n $HOME/setup/elk/log4j2.properties $BASE/elk/conf
+cp -n $HOME/setup/kafka/kafka-server-1.properties $BASE/kafka/kafka/conf
+cp -n $HOME/setup/kafka/zookeeper.properties $BASE/kafka/kafka/conf
 
 ##############################
 # Copy startup scripts
-cp $HOME/setup/influxdb.sh $BASE/influx
-cp $HOME/setup/kapacitor.sh $BASE/influx
-cp $HOME/setup/chronograf.sh $BASE/influx
-cp $HOME/setup/telegraf.sh $BASE/telegraf
-cp $HOME/setup/elastic.sh $BASE/elk
-cp $HOME/setup/kafka-server-1.sh $BASE/kafka
+cp $HOME/setup/influx/influxdb.sh $BASE/influx
+cp $HOME/setup/influx/kapacitor.sh $BASE/influx
+cp $HOME/setup/influx/chronograf.sh $BASE/influx
+cp $HOME/setup/telegraf/telegraf.sh $BASE/telegraf
+cp $HOME/setup/elk/elastic.sh $BASE/elk
+cp $HOME/setup/kafka/kafka-server-1.sh $BASE/kafka
+cp $HOME/setup/kafka/zookeeper.sh $BASE/kafka
 
