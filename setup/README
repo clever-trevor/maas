@@ -1,8 +1,10 @@
 Pre-Reqs
 - Python3
-- Flask
 - wget
 - JRE 1.8+
+- Python INfluxDB module - TODO
+- Python Kafka Module - TODO
+- Python pySparc module - TODO
 
 
 1) Download the installer
@@ -48,3 +50,11 @@ Pre-Reqs
  
 10) Log on to the UI via Chrome
   http://192.168.1.xxx:9001/collect?mode=view
+
+Optional
+11) Amend Port number for Kafka server
+  vi /app/kafka/conf/kafka-server-1.properties
+
+12) Start zookeeper and Kafka
+  /app/kafka/zookeeper.sh
+  /app/kafka/kafka-server-1.sh
