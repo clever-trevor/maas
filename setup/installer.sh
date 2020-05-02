@@ -82,11 +82,12 @@ tar xzf $BASE/sw/pyspark-2.4.5.tar.gz
 
 # MaaS files
 cd $HOME
-rm -rf $HOME/api $HOME/install $HOME/setup $HOME/www
-mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/www
+rm -rf $HOME/api $HOME/install $HOME/setup $HOME/www $HOME/kafka
+mkdir -p $HOME/api $HOME/conf $HOME/install $HOME/www $HOME/kafka
 mkdir -p $HOME/setup/elk  $HOME/setup/git $HOME/setup/influx $HOME/setup/kafka $HOME/setup/telegraf 
 unzip -o $BASE/sw/master.zip
 cp -r $HOME/maas-master/api/* $HOME/api
+cp -r $HOME/maas-master/kafka/* $HOME/kafka
 # Don't overwrite any existing config files
 cp -rn $HOME/maas-master/conf/* $HOME/conf
 cp -r $HOME/maas-master/install/* $HOME/install
