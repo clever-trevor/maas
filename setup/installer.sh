@@ -44,7 +44,7 @@ wget https://github.com/schmorgs/maas/archive/master.zip -O master.zip
 # ELK
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-linux-x86_64.tar.gz -O elasticsearch-7.6.2-linux-x86_64.tar.gz
 # Kafka
-wget https://www.mirrorservice.org/sites/ftp.apache.org/kafka/2.5.0/kafka_2.12-2.5.0.tgz -O kafka_2.12-2.5.0.tgz
+wget https://apache.mirrors.nublue.co.uk/kafka/2.5.0/kafka_2.12-2.5.0.tgz -O kafka_2.12-2.5.0.tgz
 # Python Modules
 wget https://files.pythonhosted.org/packages/4e/0b/cb02268c90e67545a0e3a37ea1ca3d45de3aca43ceb7dbf1712fb5127d5d/Flask-1.1.2.tar.gz
 wget https://files.pythonhosted.org/packages/be/8d/85ec8f11299a6dfc115244db71fd8f13e9a69f5e9eb77dc3392f4f959e9a/influxdb-5.3.0.tar.gz
@@ -104,7 +104,7 @@ rm -rf $HOME/maas-master
 cd $BASE/elk
 tar xzf $BASE/sw/elasticsearch-7.6.2-linux-x86_64.tar.gz
 
-# Kafka
+# Kafka 
 cd $BASE/kafka
 tar xzf $BASE/sw/kafka_2.12-2.5.0.tgz
 
