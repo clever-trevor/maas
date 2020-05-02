@@ -131,8 +131,8 @@ cp -n $HOME/setup/elk/elasticsearch.yml $BASE/elk/conf
 cp -n $HOME/setup/elk/kibana.yml $BASE/elk/conf
 cp -n $HOME/setup/elk/jvm.options $BASE/elk/conf
 cp -n $HOME/setup/elk/log4j2.properties $BASE/elk/conf
-cp -n $HOME/setup/kafka/kafka-server-1.properties $BASE/kafka/kafka/conf
-cp -n $HOME/setup/kafka/zookeeper.properties $BASE/kafka/kafka/conf
+cp -n $HOME/setup/kafka/kafka-server-1.properties $BASE/kafka/conf
+cp -n $HOME/setup/kafka/zookeeper.properties $BASE/kafka/conf
 
 ##############################
 # Copy startup scripts
