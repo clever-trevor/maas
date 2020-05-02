@@ -2,13 +2,12 @@ Pre-Reqs
 - Python3
 - wget
 - JRE 1.8+
-- Python INfluxDB module - TODO
-- Python Kafka Module - TODO
-- Python pySparc module - TODO
+- Mount point called /app
 
-
-1) Download the installer
+1) Download and the installer - this will pull all the necessary packages down
+  cd /app
   wget https://raw.githubusercontent.com/schmorgs/maas/master/setup/installer.sh
+  ./installer.sh
 
 2) Edit the Telegraf URL to point to this host
   vi /app/telegraf/telegraf.sh
@@ -51,10 +50,20 @@ Pre-Reqs
 10) Log on to the UI via Chrome
   http://192.168.1.xxx:9001/collect?mode=view
 
-Optional
+Optional if you want to use pull metrics from Kafka
 11) Amend Port number for Kafka server
   vi /app/kafka/conf/kafka-server-1.properties
 
 12) Start zookeeper and Kafka
   /app/kafka/zookeeper.sh
   /app/kafka/kafka-server-1.sh
+
+13) Start the Kafka to Influx script
+  /app/maas/kafka/kafka_to_influx.py
+
+14) Add a config section to Telegraf via the UI as follows :
+  Launch http://192.168.1.xxx:9001/collect?mode=edit&entity=<thishost>
+  Add :
+    kafka=192.168.1.121:9101
+  Restart Telegraf agent
+    /app/telegraf/telegraf.sh

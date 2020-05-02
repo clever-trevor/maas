@@ -1,7 +1,7 @@
 BASE=/app
 HOME=$BASE/maas
 ##############################
-# Make Directories
+# Make Directories 
 
 mkdir -p $BASE
 
@@ -31,14 +31,25 @@ mkdir -p $BASE/kafka/logs
 # Download binaries
 cd $BASE/sw
 
+# Influx
 wget https://dl.influxdata.com/influxdb/releases/influxdb-1.8.0_linux_amd64.tar.gz -O influxdb-1.8.0_linux_amd64.tar.gz
 wget https://dl.influxdata.com/chronograf/releases/chronograf-1.8.2_linux_amd64.tar.gz -O chronograf-1.8.2_linux_amd64.tar.gz
 wget https://dl.influxdata.com/kapacitor/releases/kapacitor-1.5.5_linux_amd64.tar.gz -O kapacitor-1.5.5_linux_amd64.tar.gz
+# Grafana
 wget https://dl.grafana.com/oss/release/grafana-6.7.3.linux-amd64.tar.gz -O grafana-6.7.3.linux-amd64.tar.gz
+# Telegraf
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.14.1_linux_amd64.tar.gz -O telegraf-1.14.1_linux_amd64.tar.gz
+# MaaS Modules
 wget https://github.com/schmorgs/maas/archive/master.zip -O master.zip
+# ELK
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-linux-x86_64.tar.gz -O elasticsearch-7.6.2-linux-x86_64.tar.gz
+# Kafka
 wget https://www.apache.org/dyn/closer.cgi?path=/kafka/2.5.0/kafka_2.12-2.5.0.tgz
+# Python Modules
+wget https://files.pythonhosted.org/packages/4e/0b/cb02268c90e67545a0e3a37ea1ca3d45de3aca43ceb7dbf1712fb5127d5d/Flask-1.1.2.tar.gz
+wget https://files.pythonhosted.org/packages/be/8d/85ec8f11299a6dfc115244db71fd8f13e9a69f5e9eb77dc3392f4f959e9a/influxdb-5.3.0.tar.gz
+wget https://files.pythonhosted.org/packages/3b/1b/44605e699e0970a2be3d7135d185f95e8605399aa0f2a9d64de342eae4b7/kafka-1.3.5.tar.gz
+wget https://files.pythonhosted.org/packages/9a/5a/271c416c1c2185b6cb0151b29a91fff6fcaed80173c8584ff6d20e46b465/pyspark-2.4.5.tar.gz
 
 ##############################
 # Unzip binaries
@@ -58,6 +69,16 @@ tar xzf $BASE/sw/grafana-6.7.3.linux-amd64.tar.gz
 # Telegraf agent
 cd $BASE/telegraf
 tar xzf $BASE/sw/telegraf-1.14.1_linux_amd64.tar.gz
+
+# Flask
+cd $BASE/sw
+tar xzf $BASE/sw/Flask-1.1.2.tar.gz
+# Influx Python Module
+tar xzf $BASE/sw/influxdb-5.3.0.tar.gz
+# Kafka Python Module
+tar xzf $BASE/sw/kafka-1.3.5.tar.gz
+# PySpark
+tar xzf $BASE/sw/pyspark-2.4.5.tar.gz
 
 # MaaS files
 cd $HOME
@@ -122,4 +143,19 @@ cp $HOME/setup/telegraf/telegraf.sh $BASE/telegraf
 cp $HOME/setup/elk/elastic.sh $BASE/elk
 cp $HOME/setup/kafka/kafka-server-1.sh $BASE/kafka
 cp $HOME/setup/kafka/zookeeper.sh $BASE/kafka
+
+#############################
+# Install Python modules
+# Flask
+cd $BASE/sw/Flask-1.1.2
+python3 setup.py install --user
+# InfluxDb
+cd $BASE/sw/influxdb-5.3.0
+python3 setup.py install --user
+# Kafka
+cd $BASE/sw/kafka-1.3.5
+python3 setup.py install --user
+# PySpark
+cd $BASE/sw/pyspark-2.4.5.tar.gz
+python3 setup.py install --user
 
