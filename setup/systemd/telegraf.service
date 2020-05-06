@@ -7,5 +7,3 @@ User=%USER%
 ExecStart=/bin/bash -c "source /app/telegraf/telegraf.env; /app/telegraf/telegraf/usr/bin/telegraf --config \"$CONFIG/telegraf-configure?host=$HOSTSHORT&os=linux&reset=true\" > /dev/null 2>&1"
 Restart=on-failure
 
-[Install]
-WantedBy=multi-user.target

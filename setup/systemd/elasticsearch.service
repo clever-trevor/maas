@@ -10,5 +10,3 @@ WorkingDirectory=/app/elk/elasticsearch
 ExecStart=/app/elk/elasticsearch/bin/elasticsearch
 Restart=on-failure
 
-[Install]
-WantedBy=multi-user.target

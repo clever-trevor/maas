@@ -8,5 +8,3 @@ WorkingDirectory=/app/maas/api
 ExecStart=/bin/python3 /app/maas/api/api.py
 Restart=on-failure
 
-[Install]
-WantedBy=multi-user.target
