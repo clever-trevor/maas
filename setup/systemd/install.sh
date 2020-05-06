@@ -17,7 +17,7 @@ sed "s/%USER%/$USER/g" maas-api.service > $SYSTEMD/maas-api.service
 sed "s/%USER%/$USER/g" maas-www.service > $SYSTEMD/maas-www.service
 sed "s/%USER%/$USER/g" telegraf.service > $SYSTEMD/telegraf.service
 sed "s/%USER%/$USER/g" zookeeper.service > $SYSTEMD/zookeeper.service
-exit
+
 systemctl daemon-reload
 systemctl enable chronograf 
 systemctl enable elasticsearch
