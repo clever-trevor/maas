@@ -3,7 +3,7 @@ Description=Kafka Service
 After=network-online.target zookeeper.service
 
 [Service]
-User=trev
+User=%USER%
 WorkingDirectory=/app/kafka/kafka
 ExecStart=/app/kafka/kafka/bin/kafka-server-start.sh /app/kafka/conf/kafka-server-1.properties
 Restart=on-failure

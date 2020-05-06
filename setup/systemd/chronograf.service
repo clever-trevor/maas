@@ -3,7 +3,7 @@ Description=Influx Chronograf Service
 After=network-online.target
 
 [Service]
-User=trev
+User=%USER%
 LimitNOFILE=65536
 ExecStart=/app/influx/chronograf/usr/bin/chronograf -b /app/influx/data/chronograf/chronograf-v1.db
 Restart=on-failure

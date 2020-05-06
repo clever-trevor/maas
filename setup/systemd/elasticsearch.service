@@ -5,7 +5,7 @@ After=network-online.target
 [Service]
 Environment=ES_PATH_CONF=/app/elk/conf/
 LimitNOFILE=65536
-User=trev
+User=%USER%
 WorkingDirectory=/app/elk/elasticsearch
 ExecStart=/app/elk/elasticsearch/bin/elasticsearch
 Restart=on-failure

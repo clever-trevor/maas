@@ -3,7 +3,7 @@ Description=Influx DB Service
 After=network-online.target
 
 [Service]
-User=trev
+User=%USER%
 LimitNOFILE=65536
 ExecStart=/app/influx/influxdb/usr/bin/influxd  -config /app/influx/conf/influxdb.conf
 Restart=on-failure

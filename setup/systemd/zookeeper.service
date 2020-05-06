@@ -3,7 +3,7 @@ Description=Zookeeper Service
 After=network-online.target
 
 [Service]
-User=trev
+User=%USER%
 LimitNOFILE=65536
 WorkingDirectory=/app/kafka/kafka
 ExecStart=/app/kafka/kafka/bin/zookeeper-server-start.sh /app/kafka/conf/zookeeper.properties

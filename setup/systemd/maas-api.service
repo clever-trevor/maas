@@ -3,7 +3,7 @@ Description=MaaS API Service
 After=network-online.target elasticsearch.service
 
 [Service]
-User=trev
+User=%USER%
 WorkingDirectory=/app/maas/api
 ExecStart=/bin/python3 /app/maas/api/api.py
 Restart=on-failure
