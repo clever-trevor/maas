@@ -17,12 +17,14 @@ mkdir -p $HOME/setup/elk
 mkdir -p $HOME/setup/git
 mkdir -p $HOME/setup/influx
 mkdir -p $HOME/setup/kafka
+mkdir -p $HOME/setup/systemd
 mkdir -p $HOME/setup/telegraf
 cp $GITHOME/setup/* $HOME/setup
 cp $GITHOME/setup/elk/* $HOME/setup/elk
 cp $GITHOME/setup/git/* $HOME/setup/git
 cp $GITHOME/setup/influx/* $HOME/setup/influx
 cp $GITHOME/setup/kafka/* $HOME/setup/kafka
+cp $GITHOME/setup/systemd/* $HOME/setup/systemd
 cp $GITHOME/setup/telegraf/* $HOME/setup/telegraf
 
 # Maas Application

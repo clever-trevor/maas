@@ -23,12 +23,14 @@ mkdir -p $GITHOME/setup/elk
 mkdir -p $GITHOME/setup/git
 mkdir -p $GITHOME/setup/kafka
 mkdir -p $GITHOME/setup/influx
+mkdir -p $GITHOME/setup/systemd
 mkdir -p $GITHOME/setup/telegraf
 cp $HOME/setup/* $GITHOME/setup
 cp $HOME/setup/elk/* $GITHOME/setup/elk
 cp $HOME/setup/git/* $GITHOME/setup/git
-cp $HOME/setup/kafka/* $GITHOME/setup/kafka
 cp $HOME/setup/influx/* $GITHOME/setup/influx
+cp $HOME/setup/kafka/* $GITHOME/setup/kafka
+cp $HOME/setup/systemd/* $GITHOME/setup/systemd
 cp $HOME/setup/telegraf/* $GITHOME/setup/telegraf
 
 # MaaS Web page app
