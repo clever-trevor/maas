@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 User=%USER%
-ExecStart=/app/telegraf/telegraf/usr/bin/telegraf --config "http://192.168.1.121:9001/telegraf-configure?host=%H&os=linux&reset=true"
+ExecStart=/bin/bash -c "source /app/telegraf/telegraf.env; /app/telegraf/telegraf/usr/bin/telegraf --config \"http://$CONFIG/telegraf-configure?host=$HOSTSHORT&os=linux&reset=true\" > /dev/null 2>&1"
 Restart=on-failure
 
 [Install]
