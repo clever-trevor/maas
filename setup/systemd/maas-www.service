@@ -1,6 +1,6 @@
 [Unit]
-Description=MaaS WWW Service
-After=network-online.target
+Description=MaaS WWW Service 
+After=network-online.target elasticsearch.service
 
 [Service]
 User=trev

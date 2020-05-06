@@ -1,6 +1,6 @@
 [Unit]
 Description=MaaS API Service
-After=network-online.target
+After=network-online.target elasticsearch.service
 
 [Service]
 User=trev

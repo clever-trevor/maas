@@ -1,6 +1,6 @@
 [Unit]
 Description=Kafka Service
-After=network-online.target
+After=network-online.target zookeeper.service
 
 [Service]
 User=trev
@@ -10,3 +10,4 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+
