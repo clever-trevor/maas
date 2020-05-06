@@ -1,0 +1,12 @@
+[Unit]
+Description=MaaS WWW Service
+After=network-online.target
+
+[Service]
+User=trev
+WorkingDirectory=/app/maas/www
+ExecStart=/bin/python3 /app/maas/www/www.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

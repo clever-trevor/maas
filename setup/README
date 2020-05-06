@@ -67,3 +67,7 @@ Optional if you want to use pull metrics from Kafka
     kafka=192.168.1.121:9101
   Restart Telegraf agent
     /app/telegraf/telegraf.sh
+
+Optional if you want to start all the services at system boot
+1) cd /app/maas/setup/systemd
+2) ./install.sh

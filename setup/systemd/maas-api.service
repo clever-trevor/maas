@@ -1,0 +1,12 @@
+[Unit]
+Description=MaaS API Service
+After=network-online.target
+
+[Service]
+User=trev
+WorkingDirectory=/app/maas/api
+ExecStart=/bin/python3 /app/maas/api/api.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Influx DB Service
+After=network-online.target
+
+[Service]
+User=trev
+LimitNOFILE=65536
+ExecStart=/app/influx/influxdb/usr/bin/influxd  -config /app/influx/conf/influxdb.conf
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

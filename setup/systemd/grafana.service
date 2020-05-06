@@ -1,0 +1,11 @@
+[Unit]
+Description=Grafana Service
+After=network-online.target
+
+[Service]
+User=trev
+ExecStart=/app/grafana/grafana/bin/grafana-server
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=Elasticsearch Service
+After=network-online.target
+
+[Service]
+Environment=ES_PATH_CONF=/app/elk/conf/
+LimitNOFILE=65536
+User=trev
+WorkingDirectory=/app/elk/elasticsearch
+ExecStart=/app/elk/elasticsearch/bin/elasticsearch
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

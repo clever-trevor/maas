@@ -1,0 +1,11 @@
+[Unit]
+Description=Telegraf agent Service
+After=network-online.target
+
+[Service]
+User=trev
+ExecStart=/app/telegraf/telegraf/usr/bin/telegraf --config "http://192.168.1.121:9001/telegraf-configure?host=%H&os=linux&reset=true"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
