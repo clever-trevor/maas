@@ -48,7 +48,7 @@ def parse_alerts():
 
     # Build a URL to link to the metric at time of measurement
     query = "SELECT %s FROM telegraf.autogen.%s WHERE time > \'%s\' -1h AND time < \'%s\' + 1h AND host = \'%s\' " % ( metric_name,metric_class,metric_timestamp,metric_timestamp,entity)
-    if metric_instance != "" : 
+    if metric_instance != "" and metric_instance != "NULL": 
       query += " AND %s = \'%s\'" % ( metric_instance,metric_object )
     query = urllib.parse.quote(query)
     url = maas_conf.conf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query

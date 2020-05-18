@@ -221,12 +221,12 @@ def api_get_fragment():
 def api_get_alert_tags():
   # There could be lots of alert definitions fo aggregate the alert_tag
   # field to make processing quicker
-  query = {"size":0,"aggs":{"uniq_alert_tags":{"terms":{"field":"alert_tag.keyword"}}}}
-  x = elasticsearch.run_search(es,config_alert,query)['aggregations']['uniq_alert_tags']['buckets']
+  query = {"_source":["alert_tag"],"size":10000,"query":{"simple_query_string":{"query":"*"}}}
+  x = elasticsearch.run_search(es,config_alert,query)['hits']['hits']
   # Build a JSON array with each term found
   json_string =  "["
   for alert_tag in x:
-    json_string += '{"tag":"%s"},' % ( alert_tag['key'] )
+    json_string += '{"tag":"%s"},' % ( alert_tag['_source']['alert_tag'] )
   json_string = json_string[:-1] + "]"
   return jsonify(json_string)
 
@@ -251,7 +251,7 @@ def api_get_alert():
     except:
       alert_tag = "*"
     try :
-      query = "entity.keyword:" + entity + " AND alert_tag:" + alert_tag 
+      query = "entity.keyword:" + entity + " AND alert_tag:\"" + alert_tag + "\""
       x = elasticsearch.run_search_uri(es,config_alert,query,"&size=10000")['hits']
       records = x['hits']
       json_string = "["
@@ -391,7 +391,7 @@ def api_get_metric_last():
 
   try:
     # Build the INflux query string depending on what params were passed ni
-    if metric_instance == "" :
+    if metric_instance == "" or metric_instance == "NULL":
       query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' " % (metric_name,metric_class,entity)
     else :
       query="SELECT last(%s) from telegraf.autogen.%s WHERE host = '%s' AND %s='%s'" % (metric_name,metric_class,entity,metric_object,metric_instance)
