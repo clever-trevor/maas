@@ -94,7 +94,7 @@ def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,al
 
   result = maas_utils.evaluate_metric(value,alert_operator,alert_threshold)
   metric_timestamp = metric_timestamp.replace("T"," ").replace("Z","")
-  if metric_timestamp == "" : 
+  if metric_timestamp == "" or metric_timestamp == "NULL":
       status = "NODATARETURNED"
       value = 0
       metric_timestamp = 0
