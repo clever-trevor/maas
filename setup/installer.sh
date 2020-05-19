@@ -157,6 +157,6 @@ python3 setup.py install --user
 cd $BASE/sw/kafka-1.3.5
 python3 setup.py install --user
 # PySpark
-cd $BASE/sw/pyspark-2.4.5.tar.gz
+cd $BASE/sw/pyspark-2.4.5
 python3 setup.py install --user
 
