@@ -18,3 +18,4 @@
 2020-05-19T06:33:21Z I! Loaded outputs: kafka
 2020-05-19T06:33:21Z I! Tags enabled: host=influx-centos platform=linux
 2020-05-19T06:33:21Z I! [agent] Config: Interval:30s, Quiet:false, Hostname:"influx-centos", Flush Interval:10s
+2020-05-19T08:02:23Z I! [agent] Hang on, flushing any cached metrics before shutdown

@@ -14,6 +14,7 @@ sed "s/%USER%/$USER/g" grafana.service > $SYSTEMD/grafana.service
 sed "s/%USER%/$USER/g" influxdb.service > $SYSTEMD/influxdb.service
 sed "s/%USER%/$USER/g" kafka.service > $SYSTEMD/kafka.service
 sed "s/%USER%/$USER/g" maas-api.service > $SYSTEMD/maas-api.service
+sed "s/%USER%/$USER/g" maas-consumer.service > $SYSTEMD/maas-consumer.service
 sed "s/%USER%/$USER/g" maas-www.service > $SYSTEMD/maas-www.service
 sed "s/%USER%/$USER/g" telegraf.service > $SYSTEMD/telegraf.service
 sed "s/%USER%/$USER/g" zookeeper.service > $SYSTEMD/zookeeper.service
@@ -25,6 +26,7 @@ systemctl enable grafana
 systemctl enable influxdb
 systemctl enable kafka
 systemctl enable maas-api
+systemctl enable maas-consumer
 systemctl enable maas-www
 systemctl enable telegraf
 systemctl enable zookeeper

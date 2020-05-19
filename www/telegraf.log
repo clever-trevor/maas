@@ -1,0 +1,6 @@
+2020-05-19T08:02:16Z I! Loaded inputs: system net disk procstat procstat procstat procstat procstat cpu processes mem
+2020-05-19T08:02:16Z I! Loaded aggregators: 
+2020-05-19T08:02:16Z I! Loaded processors: 
+2020-05-19T08:02:16Z I! Loaded outputs: kafka
+2020-05-19T08:02:16Z I! Tags enabled: host=influx-centos platform=linux
+2020-05-19T08:02:16Z I! [agent] Config: Interval:30s, Quiet:false, Hostname:"influx-centos", Flush Interval:10s

@@ -51,7 +51,7 @@ Pre-Reqs
   http://192.168.1.xxx:9001/collect?mode=view
 
 Optional if you want to use pull metrics from Kafka
-11) Amend Port number for Kafka server
+11) Amend Port number for Kafka server, as well as putting hostname in advertised.host.name field
   vi /app/kafka/conf/kafka-server-1.properties
 
 12) Start zookeeper and Kafka

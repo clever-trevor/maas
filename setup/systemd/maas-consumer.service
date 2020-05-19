@@ -1,0 +1,10 @@
+[Unit]
+Description=MaaS Kafta to Influx Consumer
+After=network-online.target kafka.service
+
+[Service]
+User=%USER%
+WorkingDirectory=/app/maas/kafka
+ExecStart=/bin/python3 /app/maas/kafka/kafta_to_influx.py
+Restart=on-failure
+
