@@ -55,23 +55,23 @@
 
 [[inputs.procstat]]
   exe = "sshd"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "ntpd"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "xinetd"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "crond"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 [[inputs.procstat]]
   exe = "rsyslogd"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 ## Custom configurations start here
 

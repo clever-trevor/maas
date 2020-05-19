@@ -2,6 +2,6 @@
 [[inputs.procstat]]
   exe = "%PROCESS%"
   pid_finder = "native"
-  fieldpass = ["num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
+  fieldpass = ["pid_count","num_threads","memory_swap","memory_rss","memory_usage","cpu_time_idle","cpu_time_system","cpu_time_user"]
 
 
