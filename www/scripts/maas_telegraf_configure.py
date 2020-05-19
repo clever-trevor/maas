@@ -11,6 +11,7 @@ import datetime
 import json
 from urllib.request import Request,urlopen
 import maas_conf
+import re
 
 def configure(args):
   api_url = maas_conf.conf['api']['url']
@@ -20,6 +21,9 @@ def configure(args):
 
   if 'host' in args:
     entity = args['host']
+    if not bool(re.match("^[a-z0-9\-]+$", entity)):
+      return "Invalid hostname - must be a-z0-9\- only"
+
     target = entity + ".telegraf"
     
     message = entity
