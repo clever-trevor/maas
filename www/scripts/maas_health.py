@@ -4,6 +4,7 @@ from urllib.request import Request,urlopen
 import json
 import datetime
 import maas_conf
+import sys
 
 def health(args):
   # Set some variables from this
@@ -45,7 +46,7 @@ def health(args):
     req = Request(api_url + "/metric/last?" + params,method='GET')
     value, metric_timestamp = str(urlopen(req).read(),'utf-8').split(' ')
     color = "GREEN"
-    if metric_timestamp != "NA" :
+    if metric_timestamp != "NA" and metric_timestamp != "NULL" :
       try:
         value = float(value)
       except:

@@ -24,9 +24,14 @@
 
   omit_hostname = false
 
+# Kafka output
+[[outputs.kafka]]
+  brokers = ["%BROKER%"]
+  topic = "telegraf"
+
 # Configuration for sending metrics to InfluxDB
-[[outputs.influxdb]]
-  urls = ["%INFLUXDB%"]
+#[[outputs.influxdb]]
+#  urls = ["%INFLUXDB%"]
 
 # Read metrics about cpu usage
 [[inputs.cpu]]

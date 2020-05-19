@@ -23,3 +23,5 @@ url=http://192.168.1.121:9090
 [views]
 alert_history=http://192.168.1.121:5601
 alert_current=http://192.168.1.121:5601
+[kafka]
+broker=192.168.1.121:9101

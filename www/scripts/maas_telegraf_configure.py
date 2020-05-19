@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 
 # This web page is used to build a configuration for a Telegraf agent 
 # based on a URL call with some params
@@ -52,6 +53,7 @@ def configure(args):
       entity_frag = json.load(urlopen(req))
       content = entity_frag.replace("\\n","\n").replace("\\\"","\"").replace("%HOST%",entity)
       content = content.replace("%INFLUXDB%",maas_conf.conf['influxdb']['url'])
+      content = content.replace("\\n","\n").replace("\\\"","\"").replace("%BROKER%",maas_conf.conf['kafka']['broker'])
 
       try : 
         req =  Request(api_url + "/config/entity?entity=" + entity + "&mode=custom")
@@ -61,6 +63,7 @@ def configure(args):
       except:
         collect = ""
 
+      agent_target = ""
       try :
         for line in collect:
           monitor_type,instance = line.rstrip().split("=")
@@ -89,12 +92,6 @@ def configure(args):
             req =  Request(api_url + "/config/fragment?name=" + fragment)
             x = json.load(urlopen(req))
             x = x.replace("\\n","\n").replace("\\\"","\"").replace("%PORT%",instance)
-          # Kafka output
-          elif monitor_type == "kafka":
-            fragment = "kafka." + platform + ".template"
-            req =  Request(api_url + "/config/fragment?name=" + fragment)
-            x = json.load(urlopen(req))
-            x = x.replace("\\n","\n").replace("\\\"","\"").replace("%BROKER%",instance)
           # Pre-populated template
           elif monitor_type == "template":
             fragment = "template." + instance + "." + platform + ".template"
@@ -106,6 +103,7 @@ def configure(args):
           content += x
 
         collect.close()
+
       except:
         pass
     

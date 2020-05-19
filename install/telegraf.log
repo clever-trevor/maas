@@ -1,0 +1,20 @@
+2020-05-19T06:32:12Z I! Loaded inputs: system net disk procstat procstat procstat procstat procstat cpu processes mem
+2020-05-19T06:32:12Z I! Loaded aggregators: 
+2020-05-19T06:32:12Z I! Loaded processors: 
+2020-05-19T06:32:12Z I! Loaded outputs: kafka
+2020-05-19T06:32:12Z I! Tags enabled: host=influx-centos platform=linux
+2020-05-19T06:32:12Z I! [agent] Config: Interval:30s, Quiet:false, Hostname:"influx-centos", Flush Interval:10s
+2020-05-19T06:32:43Z I! [agent] Hang on, flushing any cached metrics before shutdown
+2020-05-19T06:33:13Z I! Loaded inputs: system net disk procstat procstat procstat procstat procstat cpu processes mem
+2020-05-19T06:33:13Z I! Loaded aggregators: 
+2020-05-19T06:33:13Z I! Loaded processors: 
+2020-05-19T06:33:13Z I! Loaded outputs: kafka
+2020-05-19T06:33:13Z I! Tags enabled: host=influx-centos platform=linux
+2020-05-19T06:33:13Z I! [agent] Config: Interval:30s, Quiet:false, Hostname:"influx-centos", Flush Interval:10s
+2020-05-19T06:33:15Z I! [agent] Hang on, flushing any cached metrics before shutdown
+2020-05-19T06:33:21Z I! Loaded inputs: cpu processes mem system net disk procstat procstat procstat procstat procstat
+2020-05-19T06:33:21Z I! Loaded aggregators: 
+2020-05-19T06:33:21Z I! Loaded processors: 
+2020-05-19T06:33:21Z I! Loaded outputs: kafka
+2020-05-19T06:33:21Z I! Tags enabled: host=influx-centos platform=linux
+2020-05-19T06:33:21Z I! [agent] Config: Interval:30s, Quiet:false, Hostname:"influx-centos", Flush Interval:10s
