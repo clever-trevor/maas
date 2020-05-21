@@ -2,6 +2,7 @@ import urllib.parse
 from urllib.request import Request,urlopen
 import json
 import base64
+import sys
 
 def add_creds(es):
   creds = es['user'] + ":" + es['pass']
@@ -49,6 +50,7 @@ def post_document(es,index,type,id,doc) :
     headers = { "Content-Type":"application/json" }
     req = Request(url,data=doc,headers=headers)
     req.add_header("Authorization","Basic %s" % add_creds(es))
+    print(req)
     resp = json.load(urlopen(req))
   except :
     resp = {}

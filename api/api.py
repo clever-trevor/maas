@@ -8,8 +8,8 @@ import urllib.request
 import socket
 import datetime
 import json
-
 import sys
+
 sys.path.append("../www/scripts")
 import maas_conf
 
@@ -46,7 +46,7 @@ def home():
 #   
 @app.route('/api/v1/entity', methods=['GET','POST'])
 def api_get_entities():
-  # GEt details about an entity
+  # Get details about an entity
   if request.method == "GET" :
     # Show all hosts if a param was not provided
     entity = "*"
@@ -589,7 +589,6 @@ def api_log_alert():
     index = log_alert_current
   else:
     index = log_alert_history
-
   x = elasticsearch.post_document(es,index,"_doc","",doc)
 
   return x

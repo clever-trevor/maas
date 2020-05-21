@@ -36,7 +36,7 @@ def create_indices ():
   # Alert settings
   x = elasticsearch.create_index(es,"maas_config_alert",settings)
 
-  settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"},"metric_timestamp":{"type":"date","format":"yyyy/MM/dd HH:mm:ss"}}}}
+  settings = {"settings":{ "number_of_shards" : 1, "number_of_replicas":0 }, "mappings":{ "properties":{"timestamp":{"type":"date","format":"dd/MM/yyyy HH:mm:ss"},"metric_timestamp":{"type":"date","format":"yyyy-MM-dd HH:mm:ss"}}}}
   # Latest results from alert run
   x = elasticsearch.create_index(es,"maas_alert_log_current",settings)
   # History of all alerts generated
