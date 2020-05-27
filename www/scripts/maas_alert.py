@@ -1,13 +1,16 @@
+#!/usr/bin/python3 
 
-# This routing controls viewing and setting of alerting
+# This routing controls viewing and setting of alert configs / thresholds
+
 from urllib.request import Request,urlopen
 import json
 import maas_conf
 
 api_url = maas_conf.conf['api']['url']
-# Routine to print a Select block with a preselected option if a match found
-def print_select(id,name,options,match) :
 
+# Routine to print a SELECT / Drop-Down HTML element with a 
+# preselected option if a match found
+def print_select(id,name,options,match) :
   content = str(type(options))
   content += "<select id='%s' name='%s'>" % (id,name)
   for option in options.split(",") :
@@ -18,7 +21,10 @@ def print_select(id,name,options,match) :
   return content
 
 
+# The main Alert function
 def alert(args,form):
+
+  # HTML Header
   content = "<html><head><link rel='stylesheet' type='text/css' href='/static/dark.css'></head>"
   content += "<h1><A style='text-decoration:none' HREF='/'>Monitoring Alert Management</a></h1>"
   content += "<hr>"
@@ -31,8 +37,9 @@ def alert(args,form):
 
   ########### EDIT
   if mode == "edit":
-    # We have passed in the contents and entity so we will just set them 
-    # Note : "edit=true" means don't write the detail but pre-populate form (next section)
+
+    # This section should be hit when a user submits the form with 
+    # all fields populated
     if 'entity' in form and not 'edit' in form :
       entity = form['entity']
       metric_class = form['metric_class']
@@ -46,13 +53,17 @@ def alert(args,form):
         alert_tag = form['alert_tag']
       except:
         alert_tag = ""
+
+      # Check we have all required parameters
       if entity == "" or metric_class == "" or metric_object == "" or metric_instance == "" or metric_name == "" or alert_operator == "" or alert_threshold == "" or support_team == "" :
         content += "<h3>One or more parameters were missing - please press back on browser to correct"
-      else :
 
+      else :
+        # Yes we do, so build the document and send to Elastic via  API 
         doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag }
         data = str(json.dumps(doc)).encode("utf-8")
 
+        # The API call
         try : 
           req = Request(api_url + "/config/alert",data=data)
           req.add_header('Content-Type','application/json')
@@ -65,7 +76,10 @@ def alert(args,form):
         except:
           content += "<h3>Bad response from /config/alert API"
      
-    # Either some detail was missing, or we want to go into form "edit" mode
+    # This section gets called when someone tries to edit an existing
+    # alert config or they did submit but some detail was missing.
+    # So rebuild the form and populate with the values we have and let them 
+    # modify and try again
     else :
       # See if we can get some details from the URL params
       if 'entity' in args : 
@@ -218,16 +232,20 @@ def alert(args,form):
 """
 
   ################### VIEW Alert config
+  # In this section, we just list the alert configs we have along 
+  # with an edit/delete buttont
   elif mode == "view":
     content += "<h2>Alert Config View</h2>"
     # Alert configuration
     try:
+      # Get the alert configs via the API and sort alphabetically
       req = Request(api_url + "/config/alert",method="GET")
       alerts = json.loads(json.load(urlopen(req)))
       alerts = sorted(alerts,key=lambda i: i['entity'] )
 
       content += "<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>"
-
+ 
+      # Print each alert as a table row
       for r in alerts:
         entity = r['entity']
         metric_class = r['metric_class']
@@ -250,6 +268,8 @@ def alert(args,form):
       content += "<h3>Unable to get alert config</h3>"
     content += "<h3><A HREF='/alert?mode=edit'>Add New Alert</A></h3>"
 
+  # If someone selected "delete" against an existing alert, then 
+  # let's delete it
   elif mode == "delete" :
     entity = args['entity']
     metric_class = args['metric_class']
@@ -260,10 +280,12 @@ def alert(args,form):
     doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name} 
     data = str(json.dumps(doc)).encode('utf-8')
 
+    # Call the API to delete the entry
     req = Request(api_url + "/config/alert",method='DELETE',data=data)
     req.add_header('Content-Type','application/json')
     resp = str(urlopen(req).read(),'utf-8')
  
+    # Check the response back from the API
     if resp == "deleted":
       content += "<h4><font color='Green'>Alert config Deleted from Database</font></h4>"
     else:

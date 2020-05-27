@@ -1,3 +1,8 @@
+#!/usr/bin/python3
+
+# This module uses a template for index and replaces variables with the 
+# actual endpoints this system is using.
+
 import maas_conf
 
 def index():

@@ -1,3 +1,8 @@
+#!/usr/bin/python3 
+
+# This is a simple form where someone can either post a dummy metric via
+# a web form, or if they prefer, can call the web page directly with the
+# fields passed as params so that it can be done programatically
 
 import urllib.parse
 from urllib.request import Request,urlopen
@@ -5,21 +10,28 @@ import json
 import maas_conf
 
 
+# Data was passed into this page so let's check it and if valid,
+# pass to Influx via the API
 def post_metric(form):
+
   api_url = maas_conf.conf['api']['url']
 
   content = "<html><head><link rel='stylesheet' type='text/css' href='/static/dark.css'></head>"
   content += "<h1><A style='text-decoration:none' HREF='/'>Generate Test Metrics</a></h1>"
   content += "<hr>"
 
+  # Check key fields were set
   if 'entity' in form and 'metric_name' in form and 'metric' in form and 'app_id' in form :
     try:
       app_id = form['app_id']
       entity = form['entity']
       metric_name = form['metric_name']
       metric_value = form['metric']
+
+      # Build the document for this metric
       doc = { "entity":entity, "metric_name":metric_name, "metric_value":metric_value,"app_id":app_id }
       data = str(json.dumps(doc)).encode("utf-8")
+      # Post to Influx
       req = Request(api_url + "/metric/post",data=data)
       req.add_header('Content-Type','application/json')
       url = str(urlopen(req).read(),'utf-8')
@@ -32,6 +44,8 @@ def post_metric(form):
       content += "<h4>Problem generating metric - please check inputs"
 
   else :
+    # Nothing was passed in so present a form where the user can
+    # enter their own values before submitting
     content += "<h2>Enter your custom metric details below</h2>"
     content += """
 <html>
