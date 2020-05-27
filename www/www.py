@@ -16,6 +16,7 @@ import maas_health
 import maas_index
 import maas_post_metric
 import maas_telegraf_configure
+import maas_infra
 
 # Maas configuration variables
 
@@ -64,6 +65,11 @@ def evaluate():
 def health():
   args = request.args
   content = maas_health.health(args)
+  return content
+
+@app.route('/infra', methods=['GET'])
+def infra():
+  content = maas_infra.check()
   return content
 
 @app.route('/post-metric', methods=['GET','POST'])
