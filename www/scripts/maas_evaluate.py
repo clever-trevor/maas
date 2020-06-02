@@ -170,5 +170,3 @@ def evaluate(args):
 
   return content
 
-
-evaluate("")
