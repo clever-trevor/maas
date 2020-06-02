@@ -325,8 +325,9 @@ def alert(args,form):
     metric_object = args['metric_object']
     metric_instance = args['metric_instance']
     metric_name = args['metric_name']
+    severity = args['severity']
 
-    doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name} 
+    doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name,"severity":severity} 
     data = str(json.dumps(doc)).encode('utf-8')
 
     # Call the API to delete the entry

@@ -320,7 +320,7 @@ def api_get_alert():
       alert_tag = ""
 
     # Build a key so that we only have one alert defined for each metric 
-    key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
+    key = "%s:%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name,severity )
     key = key.replace("/","%2F")
 
     # Post the alert
@@ -354,9 +354,13 @@ def api_get_alert():
       metric_name = data['metric_name']
     except:
       return("metric_name is a mandatory parameter")
+    try:
+      severity = data['severity']
+    except:
+      return("severity is a mandatory parameter")
  
     try:
-      key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
+      key = "%s:%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name,severity )
       x = elasticsearch.delete_document_by_id(es,config_alert,"_doc",key)['result']
     except:
       x = "no valid key match"
