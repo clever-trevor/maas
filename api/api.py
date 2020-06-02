@@ -303,17 +303,29 @@ def api_get_alert():
     except:
       return("support_team is a mandatory parameter")
     try:
+      application_id = data['application_id']
+    except:
+      return("application_id is a mandatory parameter")
+    try:
+      environment = data['environment']
+    except:
+      return("environment is a mandatory parameter")
+    try:
+      severity = data['severity']
+    except:
+      return("severity is a mandatory parameter")
+    try:
       alert_tag = data['alert_tag']
     except:
       alert_tag = ""
 
-    # BUild a key so that we only have one alert defined for each metric 
+    # Build a key so that we only have one alert defined for each metric 
     key = "%s:%s:%s:%s:%s" % ( entity,metric_class,metric_object,metric_instance,metric_name )
     key = key.replace("/","%2F")
 
     # Post the alert
     now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
-    doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag, "last_updated":now }
+    doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "application_id":application_id,"environment":environment,"severity":severity,"alert_tag":alert_tag, "last_updated":now }
     x = elasticsearch.post_document(es,config_alert,"_doc",key,doc)['result']
 
     return x
@@ -564,6 +576,18 @@ def api_log_alert():
   except:
     return("support_team is a mandatory parameter")
   try:
+    application_id = data['application_id']
+  except:
+    return("application_id is a mandatory parameter")
+  try:
+    environment = data['environment']
+  except:
+    return("environment is a mandatory parameter")
+  try:
+    severity = data['severity']
+  except:
+    return("severity is a mandatory parameter")
+  try:
     status = data['status']
   except:
     return("status is a mandatory parameter")
@@ -582,7 +606,7 @@ def api_log_alert():
 
   # Build message for alert breach
   now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
-  doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team,"status":status,"timestamp":now,"actual":actual,"metric_timestamp":metric_timestamp,"url":url}
+  doc = {"entity":entity,"metric_class":metric_class,"metric_object":metric_object,"metric_instance":metric_instance,"metric_name":metric_name,"alert_operator":alert_operator,"alert_threshold":alert_threshold,"support_team":support_team,"application_id":application_id,"environment":environment,"severity":severity,"status":status,"timestamp":now,"actual":actual,"metric_timestamp":metric_timestamp,"url":url}
 
   # DEtemine if this is a current log or history
   if log == "current": 

@@ -49,18 +49,21 @@ def alert(args,form):
       alert_operator = form['alert_operator']
       alert_threshold = form['alert_threshold']
       support_team = form['support_team']
+      application_id = form['application_id']
+      environment = form['environment']
+      severity = form['severity']
       try:
         alert_tag = form['alert_tag']
       except:
         alert_tag = ""
 
       # Check we have all required parameters
-      if entity == "" or metric_class == "" or metric_object == "" or metric_instance == "" or metric_name == "" or alert_operator == "" or alert_threshold == "" or support_team == "" :
+      if entity == "" or metric_class == "" or metric_object == "" or metric_instance == "" or metric_name == "" or alert_operator == "" or alert_threshold == "" or support_team == "" or application_id == "" or environment == "" or severity == "" :
         content += "<h3>One or more parameters were missing - please press back on browser to correct"
 
       else :
         # Yes we do, so build the document and send to Elastic via  API 
-        doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag }
+        doc = { "entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "alert_tag":alert_tag, "application_id":application_id, "environment":environment, "severity":severity }
         data = str(json.dumps(doc)).encode("utf-8")
 
         # The API call
@@ -118,6 +121,19 @@ def alert(args,form):
         alert_tag = args['alert_tag']
       else :
         alert_tag = ""
+      if 'application_id' in args : 
+        application_id = args['application_id']
+      else :
+        application_id = ""
+      if 'environment' in args : 
+        environment = args['environment']
+      else :
+        environment = ""
+      if 'severity' in args : 
+        severity = args['severity']
+      else :
+        severity = ""
+      
 
       # Now lets build the form, populating values if we have them
       content += """
@@ -143,7 +159,7 @@ def alert(args,form):
   </TD>
  </TR>
  <TR>
-  <TD>Metric Class</TD>
+  <TD>Class</TD>
   <TD>
   """
       content += print_select("metric_class","metric_class","cpu,disk,procstat,procstat_lookup,http",metric_class)
@@ -151,7 +167,7 @@ def alert(args,form):
   </TD>
  </TR>
  <TR>
-  <TD>Metric Object</TD>
+  <TD>Object</TD>
   <TD>
   """
       content += "<input name='metric_object' id='metric_object' value='" + metric_object + "'>"
@@ -160,7 +176,7 @@ def alert(args,form):
   </TD>
  </TR>
  <TR>
-  <TD>Metric Instance</TD>
+  <TD>Instance</TD>
   <TD>
   """
       content += "<input name='metric_instance' id='metric_instance' value='" + metric_instance + "'>"
@@ -169,7 +185,7 @@ def alert(args,form):
   </TD>
  </TR>
  <TR>
-  <TD>Metric Name</TD>
+  <TD>Name</TD>
   <TD>
   """
       content += "<input name='metric_name' id='metric_name' value='" + metric_name + "'>"
@@ -204,6 +220,31 @@ def alert(args,form):
   </TD>
  </TR>
  <TR>
+  <TD>App Id</TD>
+  <TD>
+  """
+      content += "<input name='application_id' id='application_id' value='" + application_id + "' pattern='[0-9]+'>"
+      content += """
+    </input>
+  </TD>
+ </TR>
+ <TR>
+  <TD>Environment</TD>
+  <TD>
+  """
+      content += print_select("environment","environment","Prod,DR,UAT,Dev",environment)
+      content += """
+  </TD>
+ </TR>
+ <TR>
+  <TD>Severity</TD>
+  <TD>
+  """
+      content += print_select("severity","severity","Critical,Major",severity)
+      content += """
+  </TD>
+ </TR>
+ <TR>
   <TD>Tag (Optional)</TD>
   <TD>
   """
@@ -222,7 +263,7 @@ def alert(args,form):
 </FORM>
 
 <B>Example Metrics</B><BR>
-<TABLE border=1><TR><TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name</TR>
+<TABLE border=1><TR><TH>Class<TH>Object<TH>Instance<TH>Name</TR>
 <TR><TD>cpu<TD>cpu<TD>cpu-total<TD>usage_idle<BR>usage_system<BR>usage_user</TR>
 <TR><TD>disk<TD>path<TD>/opt<BR>C:<TD>free<BR>inodes_free<BR>used<BR>used_percent</TR>
 <TR><TD>procstat<TD>exe<TD>sshd<BR>syslogd<TD>cpu_time_idle<BR>cpu_time_user<BR>cpu_time_system<BR>memory_usage<BR>num_threads</TR>
@@ -243,7 +284,7 @@ def alert(args,form):
       alerts = json.loads(json.load(urlopen(req)))
       alerts = sorted(alerts,key=lambda i: i['entity'] )
 
-      content += "<TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Alert Tag</TR>"
+      content += "<TABLE class='blueTable'><TR><TH>Host<TH>Class<TH>Object<TH>Instance<TH>Name<TH>Alert Operator<TH>Alert Threshold<TH>App Id<TH>Environment<TH>Severity<TH>Support Team<TH>Alert Tag</TR>"
  
       # Print each alert as a table row
       for r in alerts:
@@ -254,15 +295,23 @@ def alert(args,form):
         metric_name = r['metric_name']
         alert_operator = r['alert_operator']
         alert_threshold = r['alert_threshold']
+        try :
+          application_id = r['application_id']
+          environment = r['environment']
+          severity = r['severity']
+        except:
+          application_id = ""
+          environment = ""
+          severity = ""
         support_team = r['support_team']
         try :
           alert_tag = r['alert_tag']
         except:
           alert_tag = ""
 
-        params = "&entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&edit=true" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag)
+        params = "&entity=%s&metric_class=%s&metric_object=%s&metric_instance=%s&metric_name=%s&alert_operator=%s&alert_threshold=%s&support_team=%s&alert_tag=%s&application_id=%s&environment=%s&severity=%s&edit=true" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag,application_id,environment,severity)
         url = "/alert?" 
-        content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params)
+        content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD><A HREF='%s'>Edit</A><TD><A HREF='%s'>Delete</A></TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,alert_tag,url + "mode=edit" + params, url + "mode=delete" + params)
       content += "</TABLE>"
     except:
       content += "<h3>Unable to get alert config</h3>"

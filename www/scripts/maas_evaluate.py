@@ -25,7 +25,7 @@ def html_header():
 
 def parse_alerts():
   global content
-  content += " <TABLE class='blueTable'><TR><TH>Host<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>Status<TH>Measured Value<TH>Metric Time</TR>"
+  content += " <TABLE class='blueTable'><TR><TH>Host<TH>Class<TH>Object<TH>Instance<TH>Name<TH>Alert Operator<TH>Alert Threshold<TH>Support Team<TH>App Id<TH>Environment<TH>Severity<TH>Status<TH>Measured Value<TH>Metric Time</TR>"
 
   # Get all alert configurations via the API
   req = Request(api_url + "/config/alert",method='GET')
@@ -48,6 +48,9 @@ def parse_alerts():
     alert_operator = r['alert_operator']
     alert_threshold = r['alert_threshold']
     support_team = r['support_team']
+    application_id = r['application_id']
+    environment = r['environment']
+    severity = r['severity']
 
     # A hack for disk alert where Windows disks are represented as
     # Linux paths
@@ -69,12 +72,12 @@ def parse_alerts():
     url = maas_conf.conf['chronograf']['url'] + "/sources/1/chronograf/data-explorer?query=" + query
 
     # Log the results in the Elastic log
-    logMsg("current",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
+    logMsg("current",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp,url)
 
     # Colour the cell dependant on result
     if "ALERT" in status:
       alerts += 1
-      escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
+      escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp,url)
     elif "PASS" in status:
       passes += 1
     else :
@@ -85,7 +88,7 @@ def parse_alerts():
     else:
       status = "<FONT COLOR=RED>%s</FONT>" % (status)
 
-    content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp) 
+    content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % ( entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp) 
 
     tests += 1
 
@@ -96,8 +99,11 @@ def parse_alerts():
   return tests
 
 # This function is called when we want to escalate the alert.
-def escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url):
-  logMsg("history",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url)
+def escalate_alert(entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp,url):
+
+  # For now, we'll just log it in Elastic
+  logMsg("history",entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp,url)
+
   return
 
 # Test the alert configuration against latest Influx data point
@@ -129,10 +135,10 @@ def test_metric(entity,metric_class,metric_object,metric_instance,metric_name,al
   return status,value,metric_timestamp
 
 # Function to log a message to Elastic for each alert tested
-def logMsg(index,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,status,actual,metric_timestamp,url) :
+def logMsg(index,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold,support_team,application_id,environment,severity,status,actual,metric_timestamp,url) :
 
   # Build the structured log message
-  doc = { "log":index,"entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "status":status,"actual":actual,"metric_timestamp":metric_timestamp,"url":url }
+  doc = { "log":index,"entity":entity, "metric_class":metric_class, "metric_object":metric_object, "metric_instance":metric_instance, "metric_name":metric_name, "alert_operator":alert_operator, "alert_threshold":alert_threshold, "support_team":support_team, "application_id":application_id,"environment":environment,"severity":severity,"status":status,"actual":actual,"metric_timestamp":metric_timestamp,"url":url }
   data = str(json.dumps(doc)).encode("utf-8")
 
   # Sent to Elastic via API
@@ -159,8 +165,10 @@ def evaluate(args):
 
   time_taken = str(time.process_time() - start)
   summary = "Tests:" + tests + " Time Taken:" + time_taken
-  logMsg("current","summary","","","","","","","",summary,"","","")
+  logMsg("current","summary","","","","","","","","","","",summary,"","","")
   content += "</html>"
 
   return content
 
+
+evaluate("")

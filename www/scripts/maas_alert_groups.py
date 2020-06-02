@@ -80,7 +80,7 @@ def alert_groups(args):
     content += "<H2>Running tests in group <i>%s</i><h2>" % (alert_tag_in)
 
     # Build a table of each test executed to show at the end
-    monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Metric Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
+    monitors = "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Class<TH>Object<TH>Instance<TH>Name<TH>Operator<TH>Threshold<TH>Actual<TH>Status<TH>Sample Time</TR>"
 
     status = {}  # Dictionary used to store the overall monitors and status
     for r in records :
@@ -97,6 +97,9 @@ def alert_groups(args):
       alert_operator = r['alert_operator']
       alert_threshold = r['alert_threshold']
       support_team = r['support_team']
+      application_id = r['application_id']
+      environment = r['environment']
+      severity = r['severity']
       alert_tag = r['alert_tag']
  
       # Run an Influx query for each metric
@@ -162,7 +165,7 @@ def alert_groups(args):
   # View Mode
   else :
     content += "<h2>Viewing matches for alert_tag <i>%s</i></h2>" % ( alert_tag_in )
-    content += "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Monitor Class<TH>Metric Object<TH>Metric Instance<TH>Metric Name<TH>Operator<TH>Threshold</TR>"
+    content += "<TABLE class='blueTable'><TR><TH>Tag(s)<TH>Entity<TH>Class<TH>Object<TH>Instance<TH>Name<TH>Operator<TH>Threshold</TR>"
 
     # Loop through each record that was found
     for r in records :
@@ -179,6 +182,9 @@ def alert_groups(args):
       alert_operator = r['alert_operator']
       alert_threshold = r['alert_threshold']
       support_team = r['support_team']
+      application_id = r['application_id']
+      environment = r['environment']
+      severity = r['severity']
       alert_tag= r['alert_tag']
       # And print it
       content += "<TR><TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s<TD>%s</TR>" % (alert_tag,entity,metric_class,metric_object,metric_instance,metric_name,alert_operator,alert_threshold)
