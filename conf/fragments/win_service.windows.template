@@ -1,0 +1,4 @@
+[[inputs.win_services]]
+  service_names = [
+    "%SERVICE%",
+  ]

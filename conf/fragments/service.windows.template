@@ -1,0 +1,5 @@
+[[inputs.exec]]
+  interval = "1m"
+  commands = [ 'powerShell -Command "$state=(Get-Service \"%SERVICE%\" | Select -ExpandProperty Status | ConvertTo-Json ); Write-Host -NoNewline \"win_services,service_name=%SERVICE% state=${state}i\""' ]
+  data_format = "influx"
+

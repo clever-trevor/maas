@@ -97,6 +97,7 @@ Configure metric collection for a entity
   <TD align=center>
 <B>Supported Monitors</B><BR>
 process=<I>process_name</I><BR>
+service=<I>win_service</I><BR>
 filesystem=<I>mount_point</I><BR>
 http=<I>url</I><BR>
 template=<I>pre-configured-component-template</I><BR>

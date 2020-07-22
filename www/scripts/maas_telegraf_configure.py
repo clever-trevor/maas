@@ -112,6 +112,22 @@ def configure(args):
             x = json.load(urlopen(req))
             x = x.replace("\\n","\n").replace("\\\"","\"")
 
+          # Service monitor. 
+          elif monitor_type == "service" :
+            fragment = "service." + platform + ".template"
+            req =  Request(api_url + "/config/fragment?name=" + fragment)
+            x = json.load(urlopen(req))
+            x = x.replace("\\n","\n").replace("\\\"","\"").replace("%SERVICE%",instance)
+            x = x.replace("'\\''","'")
+
+          # Service monitor. 
+          elif monitor_type == "win_service" :
+            fragment = "win_service." + platform + ".template"
+            req =  Request(api_url + "/config/fragment?name=" + fragment)
+            x = json.load(urlopen(req))
+            x = x.replace("\\n","\n").replace("\\\"","\"").replace("%SERVICE%",instance)
+            x = x.replace("'\\''","'")
+
           # Add the processed fragment to the overall config
           content += x
 

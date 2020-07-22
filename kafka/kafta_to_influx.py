@@ -9,8 +9,7 @@ client = InfluxDBClient(host='localhost', port=8086, database='telegraf')
 from kafka import KafkaConsumer
 from kafka.structs import OffsetAndMetadata, TopicPartition
 
-consumer = KafkaConsumer(bootstrap_servers=['localhost:9101'])
-consumer.subscribe('telegraf')
+consumer = KafkaConsumer('telegraf',bootstrap_servers=['localhost:9101'],group_id='maas-kafka',auto_offset_reset='latest',enable_auto_commit=False)
 
 from pyspark.sql.functions import col, from_json
 from pyspark.sql.types import *
@@ -19,8 +18,8 @@ for msg in consumer:
   data = msg.value.decode("utf-8")
   #counter = counter + 1
   #if counter % 100 == 0 :
-  #  print(counter)
+  #print(counter)
 
   client.write_points(data, protocol="line")
-#  consumer.commit()
+  consumer.commit()
 

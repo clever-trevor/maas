@@ -16,7 +16,7 @@
   precision = ""
 
   logtarget = "file"
-  logfile = "./telegraf.log"
+  logfile = "z:\\telegraf\\telegraf.log"
   logfile_rotation_max_size = "10MB"
   logfile_rotation_max_archives = 2
 
@@ -54,3 +54,6 @@
 
 ## Custom configurations start here
 
+#[[inputs.exec]]
+#  commands = [ "taskkill /F /IM telegraf.exe" ]
+#  interval = "5m"

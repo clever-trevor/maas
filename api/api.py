@@ -498,15 +498,19 @@ def api_delete_entity():
     return "no entity passed"
 
   # Build a query to match this host
-  doc = { "query":{"match": {"entity":entity } } }
+  doc = { "query":{"match": {"entity.keyword":entity } } }
   # String to caputre all output 
   results = ""
+
   x = elasticsearch.es_function(es,config_entity_require,"_delete_by_query?conflicts=proceed",doc,"POST")
   results = "entity-require:" + str(x) + "<BR>"
+
   x = elasticsearch.es_function(es,config_entity_publish,"_delete_by_query?conflicts=proceed",doc,"POST")
   results += "entity-publish:" + str(x) + "<BR>"
+
   x = elasticsearch.es_function(es,config_alert,"_delete_by_query?conflicts=proceed",doc,"POST")
   results += "config-alert-publish:" + str(x) + "<BR>"
+
   # Return the output
   return results
 
