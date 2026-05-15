@@ -1,5 +1,7 @@
 <h2>MAAS - Monitoring as a Service</h2>
 This project was started to build a self-service and partially automated front end to the Influx/Telegraf monitoring tools.
+It is fundamentally a metrics based monitoring tool with a front end which allows users to add monitoring of their servers without having to understand the underlying tools.
+So the front end is an abstraction layer and config is stored in a simplified format, which means the underlying agents could be replaced with another product by building a new module instead of rewriting the whole platform.
 
 It is built around these tools :<BR>
 <LI>InfluxDB - TSDB Store
@@ -7,6 +9,7 @@ It is built around these tools :<BR>
 <LI>Telegraf - Agents for metric collection
 <LI>Elasticsearch - Used to store telegraf configs, alert definitions, logs, etc.
 <LI>Python - Standard Python3 package (Flask will be installed as part of this)
+<LI>Kafka - Message bus for Telegraf to push its metrics to
   <BR>
 <BR>
 The features are as follows :<BR>
