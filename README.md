@@ -1,4 +1,4 @@
-<h2>Summary</h2>
+<h2>MAAS - Monitoring as a Service</h2>
 This project was started to build a self-service and partially automated front end to the Influx/Telegraf monitoring tools.
 
 It is built around these tools :<BR>
