@@ -1,7 +1,7 @@
 <h2>Summary</h2>
 This project was started to build a self-service and partially automated front end to the Influx/Telegraf monitoring tools.
 
-It uses (or rather relies on) :<BR>
+It is built around these tools :<BR>
 <LI>InfluxDB - TSDB Store
 <LI>Chronograf - Visualisation
 <LI>Telegraf - Agents for metric collection
